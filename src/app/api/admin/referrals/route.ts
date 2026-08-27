@@ -1,0 +1,11 @@
+import { listAdminReferrals } from "@/server/admin/dashboard";
+import { apiError, ok } from "@/server/http/responses";
+
+export async function GET() {
+  try {
+    return ok(await listAdminReferrals(), { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return apiError("UNAUTHORIZED", "Administrator authorization is required.", 401);
+  }
+}
+
