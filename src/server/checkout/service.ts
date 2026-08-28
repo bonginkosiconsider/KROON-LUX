@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/auth/session";
@@ -63,15 +64,15 @@ export async function createPendingCheckout(input: z.infer<typeof checkoutSchema
         referralAttributionId: referral?.id,
         items: {
           create: cart.items.map((item) => ({
-            productId: item.product.id,
-            variantId: item.variant.id,
+            product: { connect: { id: item.product.id } },
+            variant: { connect: { id: item.variant.id } },
             productName: item.product.name,
             variantName: item.variant.name,
             sku: item.variant.sku,
             unitPriceCents: item.unitPriceCents,
             quantity: item.quantity,
             imageUrl: item.variant.imageUrl ?? item.product.images[0]?.url,
-            attributes: item.variant.attributes,
+            attributes: item.variant.attributes as Prisma.InputJsonValue,
           })),
         },
       },

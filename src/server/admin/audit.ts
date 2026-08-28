@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 type AuditInput = {
@@ -17,7 +18,7 @@ export async function writeAuditLog(input: AuditInput) {
       action: input.action,
       entity: input.entity,
       entityId: input.entityId,
-      metadata: input.metadata,
+      metadata: input.metadata as Prisma.InputJsonValue | undefined,
     },
   });
 }

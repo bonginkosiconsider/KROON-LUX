@@ -910,6 +910,25 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
+.admin-products-workspace,
+.admin-form,
+.firebase-catalog-filters {
+  display: grid;
+  gap: 24px;
+}
+
+.admin-form { max-width: 760px; }
+.firebase-catalog-filters { grid-template-columns: minmax(0, 1fr) 240px; margin-bottom: 32px; }
+.admin-checks, .admin-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 18px; }
+.admin-checks label { display: flex; align-items: center; gap: 8px; }
+.admin-checks input { min-height: auto; width: auto; }
+.admin-image-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.admin-image-list img { aspect-ratio: 1; height: 76px; object-fit: cover; width: 76px; }
+.admin-table small { color: var(--muted-light); display: block; margin-top: 5px; }
+.danger { color: #e4968a; }
+.admin-auth-state, .admin-login { margin: 8vh auto; max-width: 520px; }
+.admin-login form { display: grid; gap: 18px; margin-top: 28px; }
+
 .skeleton {
   animation: pulse 1.2s ease-in-out infinite;
   background: linear-gradient(90deg, var(--bone), var(--paper), var(--bone));
@@ -1042,6 +1061,8 @@ a:focus-visible {
   .cart-line {
     grid-template-columns: 1fr;
   }
+
+  .firebase-catalog-filters { grid-template-columns: 1fr; }
 
   .purchase-action { align-items: start; flex-direction: column; }
 
