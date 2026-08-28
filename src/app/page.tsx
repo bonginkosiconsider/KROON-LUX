@@ -1,7 +1,7 @@
 import { ProductCard } from "@/components/commerce/ProductCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { listActiveProducts } from "@/server/catalog/products";
+import { getCatalogFacets, listActiveProducts } from "@/server/catalog/products";
 
 type Product = Awaited<ReturnType<typeof listActiveProducts>>["data"][number];
 
@@ -14,10 +14,11 @@ async function productSection(query: Parameters<typeof listActiveProducts>[0]) {
 }
 
 export default async function Home() {
-  const [featured, arrivals, bestSellers] = await Promise.all([
+  const [featured, arrivals, bestSellers, facets] = await Promise.all([
     productSection({ limit: 3, sort: "featured" }),
     productSection({ limit: 3, sort: "newest" }),
     productSection({ limit: 3, sort: "best-selling" }),
+    getCatalogFacets().catch(() => ({ categories: [], collections: [], sizes: [], colors: [] })),
   ]);
 
   return (
@@ -79,6 +80,25 @@ export default async function Home() {
             )}
           </div>
         </section>
+
+        {facets.categories.length > 0 ? (
+          <section className="section category-section">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Browse by category</p>
+                <h2>The edit, your way.</h2>
+              </div>
+              <a className="text-link" href="/shop">Explore the catalogue</a>
+            </div>
+            <div className="category-grid">
+              {facets.categories.filter((category) => !category.parentId).slice(0, 4).map((category, index) => (
+                <a className={`category-card category-card-${index + 1}`} href={`/shop?category=${category.slug}`} key={category.id}>
+                  <span>Explore</span><h3>{category.name}</h3><span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="dark-band section" id="story">
           <p className="eyebrow gold">The Kroon standard</p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CatalogSearch } from "@/components/site/CatalogSearch";
 import { getCurrentUser } from "@/server/auth/session";
 import { readCart } from "@/server/cart/service";
 
@@ -20,6 +21,7 @@ export async function SiteHeader() {
         <Link href="/#story">House</Link>
       </nav>
       <div className="header-actions">
+        <CatalogSearch />
         <Link href="/account">{user ? "Account" : "Sign in"}</Link>
         <Link className="bag-link" href="/cart">
           Bag <span>{cart?.itemCount ?? 0}</span>

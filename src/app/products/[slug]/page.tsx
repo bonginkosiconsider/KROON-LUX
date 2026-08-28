@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AddToCartButton } from "@/components/commerce/AddToCartButton";
+import { ProductPurchasePanel } from "@/components/commerce/ProductPurchasePanel";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { formatMoney } from "@/lib/format";
 import { getActiveProductBySlug } from "@/server/catalog/products";
 
 type ProductPageProps = {
@@ -66,12 +65,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <aside className="product-summary">
             <p className="eyebrow gold">{product.category?.name ?? product.collection?.name ?? product.brand ?? "Kroon Luxe"}</p>
             <h1>{product.name}</h1>
-            <p className="product-price">{formatMoney(price)}</p>
             {product.shortDescription ? <p className="lead">{product.shortDescription}</p> : null}
-            <AddToCartButton
-              variantId={firstAvailable?.id ?? null}
-              disabled={!firstAvailable || firstAvailable.stockQuantity - firstAvailable.reservedStock <= 0}
-            />
+            <ProductPurchasePanel variants={product.variants} />
             <div className="variant-list" aria-label="Available variations">
               {product.variants.map((variant) => {
                 const available = variant.stockQuantity - variant.reservedStock;
