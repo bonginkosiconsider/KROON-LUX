@@ -1,6 +1,6 @@
 import "server-only";
 
-import { OrderStatus, PaymentStatus, ProductStatus, StockStatus } from "@prisma/client";
+import { PaymentStatus, ProductStatus, StockStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/server/auth/session";
 

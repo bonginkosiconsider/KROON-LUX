@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { AdminGate } from "@/components/firebase/AdminGate";
+import { redirect } from "next/navigation";
+import { requireAdmin } from "@/server/auth/session";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  try {
+    await requireAdmin();
+  } catch {
+    redirect("/account?next=/admin");
+  }
+
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
@@ -21,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           Storefront
         </Link>
       </aside>
-      <main className="admin-main"><AdminGate>{children}</AdminGate></main>
+      <main className="admin-main">{children}</main>
     </div>
   );
 }

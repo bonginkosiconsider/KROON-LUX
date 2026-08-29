@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CatalogSearch } from "@/components/site/CatalogSearch";
+import { HeaderActions } from "@/components/site/HeaderActions";
 import { getCurrentUser } from "@/server/auth/session";
 import { readCart } from "@/server/cart/service";
 
@@ -20,13 +20,7 @@ export async function SiteHeader() {
         <Link href="/shop?sort=best-selling">Best sellers</Link>
         <Link href="/#story">House</Link>
       </nav>
-      <div className="header-actions">
-        <CatalogSearch />
-        <Link href="/account">{user ? "Account" : "Sign in"}</Link>
-        <Link className="bag-link" href="/cart">
-          Bag <span>{cart?.itemCount ?? 0}</span>
-        </Link>
-      </div>
+      <HeaderActions isSignedIn={Boolean(user)} itemCount={cart?.itemCount ?? 0} />
     </header>
   );
 }

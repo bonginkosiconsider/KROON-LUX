@@ -42,7 +42,11 @@ export type UserProfile = {
   id: string;
   email: string;
   role: "admin" | "customer";
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   createdAt: FirestoreTimestamp;
+  updatedAt?: FirestoreTimestamp;
 };
 
 export function slugify(value: string) {

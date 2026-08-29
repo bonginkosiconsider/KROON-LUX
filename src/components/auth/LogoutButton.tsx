@@ -1,7 +1,9 @@
 "use client";
 
+import { signOut } from "firebase/auth";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -9,7 +11,10 @@ export function LogoutButton() {
 
   function logout() {
     startTransition(async () => {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await Promise.allSettled([
+        signOut(auth),
+        fetch("/api/auth/logout", { method: "POST" }),
+      ]);
       router.refresh();
     });
   }
@@ -20,4 +25,3 @@ export function LogoutButton() {
     </button>
   );
 }
-

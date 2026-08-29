@@ -1,6 +1,7 @@
 "use client";
 
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -26,3 +27,16 @@ export const firebaseApp = createFirebaseApp();
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
+
+let analyticsPromise: Promise<Analytics | null> | null = null;
+
+export function getFirebaseAnalytics(): Promise<Analytics | null> {
+  if (!firebaseConfig.measurementId || typeof window === "undefined") {
+    return Promise.resolve(null);
+  }
+
+  analyticsPromise ??= isSupported()
+    .then((supported) => (supported ? getAnalytics(firebaseApp) : null))
+    .catch(() => null);
+  return analyticsPromise;
+}

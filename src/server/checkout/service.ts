@@ -66,6 +66,8 @@ export async function createPendingCheckout(input: z.infer<typeof checkoutSchema
           create: cart.items.map((item) => ({
             product: { connect: { id: item.product.id } },
             variant: { connect: { id: item.variant.id } },
+            productId: item.product.id,
+            variantId: item.variant.id,
             productName: item.product.name,
             variantName: item.variant.name,
             sku: item.variant.sku,

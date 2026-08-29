@@ -21,30 +21,50 @@ export function CatalogSearch() {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let cancelled = false;
     try {
-      setRecent(JSON.parse(window.localStorage.getItem(recentKey) ?? "[]"));
+      const stored = JSON.parse(window.localStorage.getItem(recentKey) ?? "[]");
+      window.setTimeout(() => { if (!cancelled && Array.isArray(stored)) setRecent(stored.filter((item): item is string => typeof item === "string")); }, 0);
     } catch {
-      setRecent([]);
+      window.setTimeout(() => { if (!cancelled) setRecent([]); }, 0);
     }
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setSuggestions([]);
-      return;
-    }
     const controller = new AbortController();
+    if (query.trim().length < 2) {
+      const timer = window.setTimeout(() => setSuggestions([]), 0);
+      return () => { controller.abort(); window.clearTimeout(timer); };
+    }
     const timer = window.setTimeout(async () => {
-      const response = await fetch(`/api/catalog/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
-      if (!response.ok) return;
-      const body = (await response.json()) as { data: Suggestion[] };
-      setSuggestions(body.data);
+      try {
+        const response = await fetch(`/api/catalog/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
+        if (!response.ok) return;
+        const body = (await response.json()) as { data: Suggestion[] };
+        setSuggestions(body.data);
+      } catch { /* Ignore cancelled searches. */ }
     }, 180);
     return () => {
       controller.abort();
       window.clearTimeout(timer);
     };
   }, [query]);
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   function remember(value: string) {
     const next = [value, ...recent.filter((item) => item !== value)].slice(0, 5);
