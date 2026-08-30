@@ -1,4 +1,4 @@
-import { AdminOrdersClient } from "@/components/firebase/AdminOrdersClient";
+import { LazyAdminWorkspace } from "@/components/firebase/LazyAdminWorkspace";
 
 export default function AdminOrdersPage() {
   return (
@@ -11,7 +11,7 @@ export default function AdminOrdersPage() {
         <span>Real-time fulfillment</span>
       </header>
 
-      <AdminOrdersClient />
+      <LazyAdminWorkspace workspace="orders" />
     </>
   );
 }

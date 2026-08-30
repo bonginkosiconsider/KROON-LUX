@@ -1,52 +1,15 @@
-import { ProductCard } from "@/components/commerce/ProductCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { getCatalogFacets, listActiveProducts } from "@/server/catalog/products";
+import { HeroSlideshow } from "@/components/site/HeroSlideshow";
+import { FirebaseCategoryGrid, FirebaseProductGrid } from "@/components/firebase/StorefrontCatalog";
 
-type Product = Awaited<ReturnType<typeof listActiveProducts>>["data"][number];
-
-async function productSection(query: Parameters<typeof listActiveProducts>[0]) {
-  try {
-    return (await listActiveProducts(query)).data;
-  } catch {
-    return [] as Product[];
-  }
-}
-
-export default async function Home() {
-  const [featured, arrivals, bestSellers, facets] = await Promise.all([
-    productSection({ limit: 3, sort: "featured" }),
-    productSection({ limit: 3, sort: "newest" }),
-    productSection({ limit: 3, sort: "best-selling" }),
-    getCatalogFacets().catch(() => ({ categories: [], collections: [], sizes: [], colors: [] })),
-  ]);
-
+export default function Home() {
+  const facets = { categories: [] as { id: string; name: string; slug: string; parentId: string | null }[], collections: [], sizes: [], colors: [] };
   return (
     <>
       <SiteHeader />
       <main>
-        <section className="hero" id="top">
-          <div className="hero-copy">
-            <p className="eyebrow gold">The first edit / Johannesburg</p>
-            <h1>Modern heirlooms for a lasting impression.</h1>
-            <p className="hero-intro">
-              Kroon Luxe is a premium commerce house built around considered pieces, refined materials, and a quiet black-and-gold point of view.
-            </p>
-            <div className="hero-actions">
-              <a className="button button-light" href="/shop">
-                Shop the edit
-              </a>
-              <a className="button button-ghost" href="#story">
-                Our standard
-              </a>
-            </div>
-          </div>
-          <div className="hero-panel" aria-label="Kroon Luxe brand notes">
-            <span>Limited seasonal drops</span>
-            <span>Variation-aware inventory</span>
-            <span>Secure checkout foundation</span>
-          </div>
-        </section>
+        <HeroSlideshow />
 
         <section className="section" id="collection">
           <div className="section-heading">
@@ -58,13 +21,7 @@ export default async function Home() {
               View all pieces
             </a>
           </div>
-          <div className="product-grid">
-            {featured.length > 0 ? (
-              featured.map((product) => <ProductCard key={product.id} product={product} />)
-            ) : (
-              <p className="empty-catalog">The first edit is ready for products from the admin catalog.</p>
-            )}
-          </div>
+          <FirebaseProductGrid sort="featured" />
         </section>
 
         <section className="split-section section">
@@ -72,13 +29,7 @@ export default async function Home() {
             <p className="eyebrow">New arrivals</p>
             <h2>Fresh pieces, precise details.</h2>
           </div>
-          <div className="product-list">
-            {arrivals.length > 0 ? (
-              arrivals.map((product) => <ProductCard key={product.id} product={product} />)
-            ) : (
-              <p className="empty-catalog">New arrivals will appear as active products are published.</p>
-            )}
-          </div>
+          <div className="product-list"><FirebaseProductGrid sort="newest" /></div>
         </section>
 
         {facets.categories.length > 0 ? (
@@ -100,6 +51,8 @@ export default async function Home() {
           </section>
         ) : null}
 
+        <FirebaseCategoryGrid />
+
         <section className="dark-band section" id="story">
           <p className="eyebrow gold">The Kroon standard</p>
           <h2>Luxury is not loud. It is felt.</h2>
@@ -118,13 +71,7 @@ export default async function Home() {
               Explore best sellers
             </a>
           </div>
-          <div className="product-grid">
-            {bestSellers.length > 0 ? (
-              bestSellers.map((product) => <ProductCard key={product.id} product={product} />)
-            ) : (
-              <p className="empty-catalog">Best sellers are calculated from the live catalog and order data.</p>
-            )}
-          </div>
+          <FirebaseProductGrid sort="best-selling" />
         </section>
 
         <section className="promo-band section">

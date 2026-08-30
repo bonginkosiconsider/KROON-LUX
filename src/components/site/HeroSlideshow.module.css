@@ -1,0 +1,88 @@
+.hero {
+  background: #0d0d0c;
+  height: 70vh;
+  min-height: 480px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.slides,
+.slide,
+.image {
+  height: 100%;
+  width: 100%;
+}
+
+.slides {
+  position: relative;
+}
+
+.slide {
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 700ms ease-in-out;
+}
+
+.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.image {
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.dots {
+  align-items: center;
+  bottom: 28px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+
+.dot {
+  background: rgba(255, 255, 255, 0.58);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 8px;
+  padding: 0;
+  transition: background-color 200ms ease, transform 200ms ease;
+  width: 8px;
+}
+
+.dot:hover,
+.dot:focus-visible,
+.activeDot {
+  background: #fff;
+  outline: none;
+  transform: scale(1.25);
+}
+
+@media (max-width: 767px) {
+  .hero {
+    height: 50vh;
+    min-height: 320px;
+  }
+
+  .dots {
+    bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .dot {
+    transition: none;
+  }
+}

@@ -1,46 +1,16 @@
-import { formatMoney } from "@/lib/format";
-import { listAdminReferrals } from "@/server/admin/dashboard";
+import { LazyAdminWorkspace } from "@/components/firebase/LazyAdminWorkspace";
 
-export default async function AdminReferralsPage() {
-  const promoters = await listAdminReferrals();
-
+export default function AdminReferralsPage() {
   return (
     <>
       <header className="admin-page-header">
         <div>
-          <p className="eyebrow gold">Growth</p>
+          <p className="eyebrow">Marketing</p>
           <h1>Referrals</h1>
         </div>
-        <span>{promoters.length} promoters</span>
+        <span>Partner programme</span>
       </header>
-
-      <section className="admin-panel">
-        <div className="admin-table">
-          <div className="admin-table-row admin-table-head">
-            <span>Promoter</span>
-            <span>Code</span>
-            <span>Status</span>
-            <span>Clicks</span>
-            <span>Commission</span>
-          </div>
-          {promoters.length > 0 ? (
-            promoters.map((promoter) => {
-              const commissionCents = promoter.commissions.reduce((sum, commission) => sum + commission.amountCents, 0);
-              return (
-                <div className="admin-table-row" key={promoter.id}>
-                  <span>{promoter.user.firstName} {promoter.user.lastName}</span>
-                  <span>{promoter.code}</span>
-                  <span>{promoter.status}</span>
-                  <span>{promoter._count.clicks}</span>
-                  <span>{formatMoney(commissionCents)}</span>
-                </div>
-              );
-            })
-          ) : (
-            <p className="empty-catalog">Approved promoters, clicks, conversions, and commissions will appear here.</p>
-          )}
-        </div>
-      </section>
+      <LazyAdminWorkspace workspace="referrals" />
     </>
   );
 }

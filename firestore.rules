@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isBootstrapAdmin() {
+      return signedIn() && (
+        request.auth.token.email == 'kroonluxe@gmail.com' ||
+        request.auth.token.email == 'bonginkosiconsider@gmail.com'
+      );
+    }
+    function isAdmin() {
+      return isBootstrapAdmin() ||
+        (signedIn() &&
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAdmin() || (signedIn() && request.auth.uid == userId && request.resource.data.role == 'customer');
+      allow update: if isAdmin() || (request.auth.uid == userId && request.resource.data.role == resource.data.role);
+      allow delete: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
+      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /referrals/{referralId} { allow read, write: if isAdmin(); }
+    match /settings/{settingId} { allow read: if true; allow write: if isAdmin(); }
+    match /shippingZones/{zoneId} { allow read, write: if isAdmin(); }
+    match /taxRates/{rateId} { allow read, write: if isAdmin(); }
+    match /returns/{returnId} { allow read, write: if isAdmin(); }
+    match /payouts/{payoutId} { allow read, write: if isAdmin(); }
+    match /categories/{categoryId} { allow read: if true; allow write: if isAdmin(); }
+  }
+}

@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { CatalogSearch } from "@/components/site/CatalogSearch";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
+import { useFirebaseCart } from "@/hooks/use-firebase-cart";
 
-export function HeaderActions({ isSignedIn, itemCount }: { isSignedIn: boolean; itemCount: number }) {
+export function HeaderActions() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useFirebaseAuth();
-  const signedIn = isSignedIn || Boolean(user);
+  const signedIn = Boolean(user);
+  const { itemCount } = useFirebaseCart();
 
   return (
     <>

@@ -1,18 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { HeaderActions } from "@/components/site/HeaderActions";
-import { getCurrentUser } from "@/server/auth/session";
-import { readCart } from "@/server/cart/service";
+import kroonLuxeLogo from "../../../logo/backgrounderaser_1785409165.png";
 
-export async function SiteHeader() {
-  const [user, cart] = await Promise.all([
-    getCurrentUser().catch(() => null),
-    readCart().catch(() => null),
-  ]);
-
+export function SiteHeader() {
   return (
     <header className="site-header">
-      <Link className="wordmark" href="/" aria-label="Kroon Luxe home">
-        <span>K</span>ROON LUXE
+      <Link className="site-logo" href="/" aria-label="Kroon Luxe home">
+        <Image alt="" priority sizes="(max-width: 720px) 120px, 180px" src={kroonLuxeLogo} />
       </Link>
       <nav className="site-nav" aria-label="Primary navigation">
         <Link href="/shop">Shop</Link>
@@ -20,7 +15,7 @@ export async function SiteHeader() {
         <Link href="/shop?sort=best-selling">Best sellers</Link>
         <Link href="/#story">House</Link>
       </nav>
-      <HeaderActions isSignedIn={Boolean(user)} itemCount={cart?.itemCount ?? 0} />
+      <HeaderActions />
     </header>
   );
 }

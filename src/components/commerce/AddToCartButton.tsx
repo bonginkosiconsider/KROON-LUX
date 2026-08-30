@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { addFirebaseCartItem } from "@/hooks/use-firebase-cart";
 
 type AddToCartButtonProps = {
   variantId: string | null;
@@ -11,23 +11,13 @@ type AddToCartButtonProps = {
 };
 
 export function AddToCartButton({ variantId, quantity = 1, disabled, label = "Add to bag" }: AddToCartButtonProps) {
-  const router = useRouter();
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   async function addToCart() {
     if (!variantId) return;
     setStatus("loading");
-    const response = await fetch("/api/cart/items", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ variantId, quantity }),
-    });
-    if (!response.ok) {
-      setStatus("error");
-      return;
-    }
-    setStatus("done");
-    router.refresh();
+    try { addFirebaseCartItem(variantId, quantity); setStatus("done"); }
+    catch { setStatus("error"); }
   }
 
   return (

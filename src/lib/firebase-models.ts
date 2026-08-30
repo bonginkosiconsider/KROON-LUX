@@ -8,6 +8,23 @@ export type Product = {
   slug: string;
   description: string;
   price: number;
+  salePrice?: number;
+  productType?: "simple" | "variable" | "grouped" | "external" | "downloadable" | "virtual";
+  shortDescription?: string;
+  sku?: string;
+  stockStatus?: "in-stock" | "out-of-stock";
+  backorders?: "not-allowed" | "allowed" | "allowed-with-notice";
+  weight?: number;
+  dimensions?: { length?: number; width?: number; height?: number };
+  shippingClass?: string;
+  attributes?: { name: string; values: string }[];
+  variations?: { name: string; price: number; inventoryCount: number }[];
+  metaTitle?: string;
+  metaDescription?: string;
+  categories?: string[];
+  tags?: string[];
+  status?: "draft" | "published" | "pending-review" | "private";
+  visibility?: "shop-and-search" | "shop-only" | "search-only" | "hidden";
   category: string;
   inventoryCount: number;
   imageUrls: string[];
@@ -29,6 +46,7 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
+  customerId?: string;
   customer: { name: string; email: string; phone?: string; address?: string };
   items: OrderItem[];
   totalAmount: number;

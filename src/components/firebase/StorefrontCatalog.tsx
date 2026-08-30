@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/commerce/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import type { Product } from "@/lib/firebase-models";
@@ -9,9 +10,29 @@ function cardProduct(product: Product) {
   return { name: product.title, slug: product.slug, shortDescription: product.description, images: product.imageUrls.map((url) => ({ url, altText: product.title })), category: { name: product.category, slug: product.category }, variants: [{ id: product.id, priceInCents: Math.round(product.price * 100), stockQuantity: product.inventoryCount, reservedStock: 0 }] };
 }
 
+type HomeCatalogSort = "featured" | "newest" | "best-selling";
+
+export function FirebaseProductGrid({ sort }: { sort: HomeCatalogSort }) {
+  const { products, loading } = useProducts();
+  const visible = [...products]
+    .sort((first, second) => sort === "newest" ? 0 : Number(second.featured) - Number(first.featured))
+    .slice(0, 3);
+
+  if (loading) return <div className="product-grid"><p className="empty-catalog">Loading the collection…</p></div>;
+  return <div className="product-grid">{visible.length ? visible.map((product) => <ProductCard key={product.id} product={cardProduct(product)} />) : <p className="empty-catalog">No published products yet.</p>}</div>;
+}
+
+export function FirebaseCategoryGrid() {
+  const { products } = useProducts();
+  const categories = [...new Set(products.map((product) => product.category).filter(Boolean))].slice(0, 4);
+  if (!categories.length) return null;
+  return <section className="section category-section"><div className="section-heading"><div><p className="eyebrow">Browse by category</p><h2>The edit, your way.</h2></div><a className="text-link" href="/shop">Explore the catalogue</a></div><div className="category-grid">{categories.map((category, index) => <a className={`category-card category-card-${index + 1}`} href={`/shop?category=${encodeURIComponent(category)}`} key={category}><span>Explore</span><h3>{category}</h3><span aria-hidden="true">→</span></a>)}</div></section>;
+}
+
 export function StorefrontCatalog({ compact = false }: { compact?: boolean }) {
   const { products, loading } = useProducts();
-  const [search, setSearch] = useState(""); const [category, setCategory] = useState("");
+  const params = useSearchParams();
+  const [search, setSearch] = useState(() => params.get("search") ?? ""); const [category, setCategory] = useState(() => params.get("category") ?? "");
   const categories = useMemo(() => [...new Set(products.map((product) => product.category))].sort(), [products]);
   const filtered = products.filter((product) => product.title.toLowerCase().includes(search.toLowerCase()) && (!category || product.category === category));
   const visible = compact ? filtered.filter((product) => product.featured).slice(0, 3) : filtered;

@@ -1,6 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
+import { useFirebaseCart } from "@/hooks/use-firebase-cart";
+import { useProducts } from "@/hooks/use-products";
+import { createFirebaseCheckout } from "@/services/firebase-orders";
 
 type CheckoutFormProps = {
   email?: string | null;
@@ -11,25 +15,26 @@ type CheckoutFormProps = {
 export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const { user } = useFirebaseAuth();
+  const { items, clear } = useFirebaseCart();
+  const { products } = useProducts();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setMessage(null);
     const formData = new FormData(event.currentTarget);
-    const payload = Object.fromEntries(formData.entries());
-    const response = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+    const lines = items.flatMap((item) => {
+      const product = products.find((candidate) => candidate.id === item.productId);
+      return product && product.inventoryCount > 0 ? [{ product, quantity: Math.min(item.quantity, product.inventoryCount) }] : [];
     });
-    const body = await response.json().catch(() => null);
-    setPending(false);
-    if (!response.ok) {
-      setMessage(body?.error?.message ?? "Checkout could not be created.");
-      return;
-    }
-    setMessage(`Order ${body.data.order.orderNumber} is pending payment. Server-side payment verification can now be connected.`);
+    const total = lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0) + (lines.length ? 95 : 0);
+    try {
+      await createFirebaseCheckout({ firstName: String(formData.get("firstName")), lastName: String(formData.get("lastName")), email: String(formData.get("email")), phone: String(formData.get("phone") || ""), address: [formData.get("address"), formData.get("apartment"), formData.get("city"), formData.get("province"), formData.get("postalCode"), formData.get("country")].filter(Boolean).join(", ") }, lines.map(({ product, quantity }) => ({ productId: product.id, title: product.title, quantity, unitPrice: product.price, imageUrl: product.imageUrls[0] })), total);
+      clear();
+      setMessage("Order created successfully. It is pending payment confirmation.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Checkout could not be created."); }
+    finally { setPending(false); }
   }
 
   return (
@@ -78,7 +83,8 @@ export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) 
           <input name="country" defaultValue="South Africa" autoComplete="shipping country-name" required />
         </label>
       </div>
-      <button className="button button-dark" type="submit" disabled={pending}>
+      {!user ? <p className="form-message">Please sign in before placing your order.</p> : null}
+      <button className="button button-dark" type="submit" disabled={pending || !user}>
         {pending ? "Creating secure order..." : "Continue to payment"}
       </button>
       {message ? <p className="form-message">{message}</p> : null}

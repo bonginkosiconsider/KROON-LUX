@@ -5,10 +5,10 @@ export default function AdminDashboard() {
     <>
       <header className="admin-page-header">
         <div>
-          <p className="eyebrow gold">Operations</p>
-          <h1>Operations dashboard.</h1>
+          <p className="eyebrow">Dashboard</p>
+          <h1>Welcome back.</h1>
         </div>
-        <span>Firebase-admin protected</span>
+        <span>Live store overview</span>
       </header>
 
       <AdminDashboardClient />

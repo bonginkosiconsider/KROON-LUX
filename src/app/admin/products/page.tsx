@@ -1,4 +1,4 @@
-import { AdminProductsClient } from "@/components/firebase/AdminProductsClient";
+import { LazyAdminWorkspace } from "@/components/firebase/LazyAdminWorkspace";
 
 export default function AdminProductsPage() {
   return (
@@ -11,7 +11,7 @@ export default function AdminProductsPage() {
         <span>Real-time catalog</span>
       </header>
 
-      <AdminProductsClient />
+      <LazyAdminWorkspace workspace="products" />
     </>
   );
 }

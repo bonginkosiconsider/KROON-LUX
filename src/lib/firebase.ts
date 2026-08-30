@@ -3,7 +3,7 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -25,7 +25,18 @@ function createFirebaseApp(): FirebaseApp {
 
 export const firebaseApp = createFirebaseApp();
 export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
+function createFirestore() {
+  if (typeof window === "undefined") return getFirestore(firebaseApp);
+  try {
+    return initializeFirestore(firebaseApp, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    });
+  } catch {
+    return getFirestore(firebaseApp);
+  }
+}
+
+export const db = createFirestore();
 export const storage = getStorage(firebaseApp);
 
 let analyticsPromise: Promise<Analytics | null> | null = null;

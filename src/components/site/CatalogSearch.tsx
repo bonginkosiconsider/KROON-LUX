@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useProducts } from "@/hooks/use-products";
 
 type Suggestion = {
   id: string;
@@ -16,9 +17,14 @@ const recentKey = "kroon-luxe-recent-searches";
 export function CatalogSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const { products } = useProducts();
+  const suggestions = useMemo<Suggestion[]>(() => {
+    const term = query.trim().toLowerCase();
+    if (term.length < 2) return [];
+    return products.filter((product) => [product.title, product.category, product.sku, product.tags?.join(" ")].filter(Boolean).some((value) => String(value).toLowerCase().includes(term))).slice(0, 8).map((product) => ({ id: product.id, label: product.title, slug: product.slug, brand: null, category: product.category }));
+  }, [products, query]);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,26 +36,6 @@ export function CatalogSearch() {
     }
     return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    if (query.trim().length < 2) {
-      const timer = window.setTimeout(() => setSuggestions([]), 0);
-      return () => { controller.abort(); window.clearTimeout(timer); };
-    }
-    const timer = window.setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/catalog/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
-        if (!response.ok) return;
-        const body = (await response.json()) as { data: Suggestion[] };
-        setSuggestions(body.data);
-      } catch { /* Ignore cancelled searches. */ }
-    }, 180);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [query]);
 
   useEffect(() => {
     function closeOnOutsideClick(event: MouseEvent) {

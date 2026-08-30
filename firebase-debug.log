@@ -1,0 +1,702 @@
+[debug] [2026-08-29T17:35:34.375Z] ----------------------------------------------------------------------
+[debug] [2026-08-29T17:35:34.382Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js login:list
+[debug] [2026-08-29T17:35:34.382Z] CLI Version:   15.28.2
+[debug] [2026-08-29T17:35:34.383Z] Platform:      win32
+[debug] [2026-08-29T17:35:34.383Z] Node Version:  v24.19.0
+[debug] [2026-08-29T17:35:34.384Z] Detected Agent: codex_cli
+[debug] [2026-08-29T17:35:34.384Z] Time:          Sat Aug 29 2026 19:35:34 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-29T17:35:34.385Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-29T17:35:34.406Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] Logged in as kroonluxe@gmail.com
+[debug] [2026-08-29T17:35:43.962Z] ----------------------------------------------------------------------
+[debug] [2026-08-29T17:35:43.968Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js hosting:sites:list --project jozi-plug
+[debug] [2026-08-29T17:35:43.969Z] CLI Version:   15.28.2
+[debug] [2026-08-29T17:35:43.969Z] Platform:      win32
+[debug] [2026-08-29T17:35:43.970Z] Node Version:  v24.19.0
+[debug] [2026-08-29T17:35:43.970Z] Detected Agent: codex_cli
+[debug] [2026-08-29T17:35:43.970Z] Time:          Sat Aug 29 2026 19:35:43 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-29T17:35:43.971Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-29T17:35:43.997Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-08-29T17:35:44.342Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-29T17:35:44.342Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-29T17:35:44.343Z] [iam] checking project jozi-plug for permissions ["firebase.projects.get","firebasehosting.sites.get"]
+[debug] [2026-08-29T17:35:44.345Z] Checked if tokens are valid: false, expires at: 1787926180149
+[debug] [2026-08-29T17:35:44.345Z] Checked if tokens are valid: false, expires at: 1787926180149
+[debug] [2026-08-29T17:35:44.346Z] > refreshing access token with scopes: []
+[debug] [2026-08-29T17:35:44.386Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-08-29T17:35:44.388Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-29T17:35:44.836Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-08-29T17:35:44.836Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-29T17:35:44.852Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-29T17:35:44.852Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-29T17:35:44.853Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.get"]}
+[debug] [2026-08-29T17:35:44.946Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-08-29T17:35:44.946Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-08-29T17:35:46.743Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 403
+[debug] [2026-08-29T17:35:46.743Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"containerInfo":"jozi-plug","consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug","consumer":"projects/jozi-plug","service":"cloudresourcemanager.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug"}]}]}}
+[debug] [2026-08-29T17:35:46.746Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-08-29T17:35:46.747Z] Checked if tokens are valid: true, expires at: 1788028543837
+[debug] [2026-08-29T17:35:46.747Z] Checked if tokens are valid: true, expires at: 1788028543837
+[debug] [2026-08-29T17:35:46.748Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/jozi-plug/sites pageToken=&pageSize=10
+[debug] [2026-08-29T17:35:48.348Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/jozi-plug/sites 403
+[debug] [2026-08-29T17:35:48.349Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/jozi-plug/sites {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[error] 
+[error] Error: Request to https://firebasehosting.googleapis.com/v1beta1/projects/jozi-plug/sites?pageToken=&pageSize=10 had HTTP Error: 403, The caller does not have permission
+[debug] [2026-08-29T17:35:48.750Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "The caller does not have permission",
+      "status": "PERMISSION_DENIED"
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-29T17:41:05.125Z] ----------------------------------------------------------------------
+[debug] [2026-08-29T17:41:05.130Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js login --reauth --no-localhost
+[debug] [2026-08-29T17:41:05.131Z] CLI Version:   15.28.2
+[debug] [2026-08-29T17:41:05.131Z] Platform:      win32
+[debug] [2026-08-29T17:41:05.131Z] Node Version:  v24.19.0
+[debug] [2026-08-29T17:41:05.132Z] Detected Agent: codex_cli
+[debug] [2026-08-29T17:41:05.132Z] Time:          Sat Aug 29 2026 19:41:05 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-29T17:41:05.132Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-29T17:41:05.533Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2026-08-29T17:41:05.534Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"25a1e78d-424c-4dd8-aa65-5547e6181104"}
+[debug] [2026-08-29T17:41:06.731Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2026-08-29T17:41:06.732Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"7yhX0zs-32fWGNX6zVgRvsZrUFGdbJBEIfLwydVaPR8"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    25A1E
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=8O8mk5nDFmb0egY_gKnojlRbja38EssvxFweVYZeR3I&session=25a1e78d-424c-4dd8-aa65-5547e6181104&attest=7yhX0zs-32fWGNX6zVgRvsZrUFGdbJBEIfLwydVaPR8
+[info] 
+[info] 3. Complete the login by running:
+[info] 
+[info]    firebase login <authorizationCode>
+[info] 
+[debug] [2026-08-30T11:16:47.078Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T11:16:47.093Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js login --reauth --no-localhost
+[debug] [2026-08-30T11:16:47.094Z] CLI Version:   15.28.2
+[debug] [2026-08-30T11:16:47.094Z] Platform:      win32
+[debug] [2026-08-30T11:16:47.095Z] Node Version:  v24.19.0
+[debug] [2026-08-30T11:16:47.095Z] Detected Agent: codex_cli
+[debug] [2026-08-30T11:16:47.095Z] Time:          Sun Aug 30 2026 13:16:47 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T11:16:47.096Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T11:16:47.456Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2026-08-30T11:16:47.456Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"17842014-90fd-4475-8432-5b83817a1d22"}
+[debug] [2026-08-30T11:16:48.985Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2026-08-30T11:16:48.985Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"4yZTkDDLnRG3RujS9VrXVOdaC4-tsIVaM72VsCLGn0M"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    17842
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=w_9lqaJ7JsK5LkNupzwBPQqVb_LB40tc3aVybCY1lBM&session=17842014-90fd-4475-8432-5b83817a1d22&attest=4yZTkDDLnRG3RujS9VrXVOdaC4-tsIVaM72VsCLGn0M
+[info] 
+[info] 3. Complete the login by running:
+[info] 
+[info]    firebase login <authorizationCode>
+[info] 
+[debug] [2026-08-30T11:48:25.017Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T11:48:25.023Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules,storage
+[debug] [2026-08-30T11:48:25.024Z] CLI Version:   15.28.2
+[debug] [2026-08-30T11:48:25.024Z] Platform:      win32
+[debug] [2026-08-30T11:48:25.024Z] Node Version:  v24.19.0
+[debug] [2026-08-30T11:48:25.025Z] Detected Agent: codex_cli
+[debug] [2026-08-30T11:48:25.025Z] Time:          Sun Aug 30 2026 13:48:25 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T11:48:25.026Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T11:48:29.654Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T11:48:29.655Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T11:48:29.656Z] [iam] checking project jozi-plug for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-08-30T11:48:29.687Z] Checked if tokens are valid: false, expires at: 1788028543837
+[debug] [2026-08-30T11:48:29.687Z] Checked if tokens are valid: false, expires at: 1788028543837
+[debug] [2026-08-30T11:48:29.688Z] > refreshing access token with scopes: []
+[debug] [2026-08-30T11:48:29.694Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-08-30T11:48:29.694Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-30T11:48:30.183Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-08-30T11:48:30.184Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-30T11:48:30.199Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T11:48:30.200Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T11:48:30.201Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-08-30T11:48:32.153Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 403
+[debug] [2026-08-30T11:48:32.154Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"containerInfo":"jozi-plug","consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug","service":"cloudresourcemanager.googleapis.com","consumer":"projects/jozi-plug"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug"}]}]}}
+[debug] [2026-08-30T11:48:32.156Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying storage, firestore 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-08-30T11:48:32.162Z] Checked if tokens are valid: true, expires at: 1788094109184
+[debug] [2026-08-30T11:48:32.163Z] Checked if tokens are valid: true, expires at: 1788094109184
+[debug] [2026-08-30T11:48:32.163Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com [none]
+[debug] [2026-08-30T11:48:32.163Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T11:48:34.061Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com 403
+[debug] [2026-08-30T11:48:34.061Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com [omitted]
+[error] 
+[error] Error: Request to https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-08-30T11:48:34.441Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "USER_PROJECT_DENIED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consoleUrl": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug",
+            "containerInfo": "jozi-plug",
+            "service": "serviceusage.googleapis.com",
+            "consumer": "projects/jozi-plug"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developer console IAM admin",
+              "url": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-30T13:54:29.416Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T13:54:29.420Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only storage
+[debug] [2026-08-30T13:54:29.421Z] CLI Version:   15.28.2
+[debug] [2026-08-30T13:54:29.422Z] Platform:      win32
+[debug] [2026-08-30T13:54:29.422Z] Node Version:  v24.19.0
+[debug] [2026-08-30T13:54:29.423Z] Detected Agent: codex_cli
+[debug] [2026-08-30T13:54:29.423Z] Time:          Sun Aug 30 2026 15:54:29 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T13:54:29.424Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T13:54:33.106Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T13:54:33.107Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T13:54:33.107Z] [iam] checking project jozi-plug for permissions ["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-08-30T13:54:33.134Z] Checked if tokens are valid: false, expires at: 1788094109184
+[debug] [2026-08-30T13:54:33.134Z] Checked if tokens are valid: false, expires at: 1788094109184
+[debug] [2026-08-30T13:54:33.135Z] > refreshing access token with scopes: []
+[debug] [2026-08-30T13:54:33.147Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-08-30T13:54:33.148Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-30T13:54:33.782Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-08-30T13:54:33.783Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-30T13:54:33.802Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T13:54:33.802Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T13:54:33.802Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-08-30T13:54:34.580Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 403
+[debug] [2026-08-30T13:54:34.581Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"containerInfo":"jozi-plug","service":"cloudresourcemanager.googleapis.com","consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug","consumer":"projects/jozi-plug"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug"}]}]}}
+[debug] [2026-08-30T13:54:34.582Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying storage 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-08-30T13:54:34.588Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T13:54:34.588Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T13:54:34.588Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com [none]
+[debug] [2026-08-30T13:54:34.589Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T13:54:36.534Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com 403
+[debug] [2026-08-30T13:54:36.534Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com [omitted]
+[error] 
+[error] Error: Request to https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-08-30T13:54:37.341Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "USER_PROJECT_DENIED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consoleUrl": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug",
+            "containerInfo": "jozi-plug",
+            "service": "serviceusage.googleapis.com",
+            "consumer": "projects/jozi-plug"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developer console IAM admin",
+              "url": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-30T14:04:03.723Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T14:04:03.729Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only storage
+[debug] [2026-08-30T14:04:03.730Z] CLI Version:   15.28.2
+[debug] [2026-08-30T14:04:03.730Z] Platform:      win32
+[debug] [2026-08-30T14:04:03.730Z] Node Version:  v24.19.0
+[debug] [2026-08-30T14:04:03.731Z] Detected Agent: codex_cli
+[debug] [2026-08-30T14:04:03.731Z] Time:          Sun Aug 30 2026 16:04:03 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T14:04:03.732Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T14:04:05.999Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T14:04:06.000Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T14:04:06.000Z] [iam] checking project jozi-plug for permissions ["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-08-30T14:04:06.031Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:06.031Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:06.033Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T14:04:06.033Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:04:06.034Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-08-30T14:04:08.117Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 200
+[debug] [2026-08-30T14:04:08.117Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying storage 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-08-30T14:04:08.126Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:08.126Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:08.126Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com [none]
+[debug] [2026-08-30T14:04:08.127Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:04:10.388Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com 200
+[debug] [2026-08-30T14:04:10.389Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com [omitted]
+[warn] !  storage: missing required API firebasestorage.googleapis.com. Enabling now... 
+[debug] [2026-08-30T14:04:10.390Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:10.391Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:10.391Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com:enable [none]
+[debug] [2026-08-30T14:04:10.392Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com:enable  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:04:11.625Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com:enable 200
+[debug] [2026-08-30T14:04:11.625Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firebasestorage.googleapis.com:enable [omitted]
+[debug] [2026-08-30T14:04:21.640Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:21.641Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:04:21.641Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket [none]
+[debug] [2026-08-30T14:04:22.431Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket 403
+[debug] [2026-08-30T14:04:22.431Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket {"error":{"code":403,"message":"Permission 'firebasestorage.defaultBucket.get' denied on resource '//firebasestorage.googleapis.com/projects/jozi-plug/defaultBucket' (or it may not exist). Remediate access with this Troubleshooter URL or share it with your administrator - https://console.cloud.google.com/iam-admin/troubleshooter/summary;errorId=CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0 .","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"IAM_PERMISSION_DENIED","domain":"firebasestorage.googleapis.com","metadata":{"permission":"firebasestorage.defaultBucket.get","troubleshooter_url":"https://console.cloud.google.com/iam-admin/troubleshooter/summary;errorId=CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0","error_info_id":"CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0","resource":"projects/jozi-plug/defaultBucket"}}]}}
+[info] 
+
+Unexpected error when fetching default storage bucket.
+[error] 
+[error] Error: Request to https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket had HTTP Error: 403, Permission 'firebasestorage.defaultBucket.get' denied on resource '//firebasestorage.googleapis.com/projects/jozi-plug/defaultBucket' (or it may not exist). Remediate access with this Troubleshooter URL or share it with your administrator - https://console.cloud.google.com/iam-admin/troubleshooter/summary;errorId=CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0 .
+[debug] [2026-08-30T14:04:22.884Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Permission 'firebasestorage.defaultBucket.get' denied on resource '//firebasestorage.googleapis.com/projects/jozi-plug/defaultBucket' (or it may not exist). Remediate access with this Troubleshooter URL or share it with your administrator - https://console.cloud.google.com/iam-admin/troubleshooter/summary;errorId=CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0 .",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "IAM_PERMISSION_DENIED",
+          "domain": "firebasestorage.googleapis.com",
+          "metadata": {
+            "permission": "firebasestorage.defaultBucket.get",
+            "troubleshooter_url": "https://console.cloud.google.com/iam-admin/troubleshooter/summary;errorId=CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0",
+            "error_info_id": "CiQwMWEwNTJmYy00YmI2LTc3NzAtYmE2OS0yYWM2NjFlOTU1YmMSIHByb2plY3RzL2pvemktcGx1Zy9kZWZhdWx0QnVja2V0",
+            "resource": "projects/jozi-plug/defaultBucket"
+          }
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-30T14:07:46.140Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T14:07:46.145Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only storage
+[debug] [2026-08-30T14:07:46.145Z] CLI Version:   15.28.2
+[debug] [2026-08-30T14:07:46.145Z] Platform:      win32
+[debug] [2026-08-30T14:07:46.146Z] Node Version:  v24.19.0
+[debug] [2026-08-30T14:07:46.146Z] Detected Agent: codex_cli
+[debug] [2026-08-30T14:07:46.147Z] Time:          Sun Aug 30 2026 16:07:46 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T14:07:46.147Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T14:07:48.598Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T14:07:48.601Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T14:07:48.602Z] [iam] checking project jozi-plug for permissions ["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-08-30T14:07:48.628Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:48.628Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:48.633Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T14:07:48.634Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:07:48.634Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-08-30T14:07:50.392Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 200
+[debug] [2026-08-30T14:07:50.392Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying storage 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-08-30T14:07:50.397Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:50.398Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:50.399Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket [none]
+[debug] [2026-08-30T14:07:51.434Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket 200
+[debug] [2026-08-30T14:07:51.435Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket {"name":"projects/jozi-plug/defaultBucket","location":"US-EAST1","bucket":{"name":"projects/jozi-plug/buckets/jozi-plug.firebasestorage.app"},"storageClass":"REGIONAL"}
+[info] i  firebase.storage: checking storage.rules for compilation errors... 
+[debug] [2026-08-30T14:07:51.439Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:51.439Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:51.439Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [none]
+[debug] [2026-08-30T14:07:51.439Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [omitted]
+[debug] [2026-08-30T14:07:52.766Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test 200
+[debug] [2026-08-30T14:07:52.767Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test {}
+[info] +  firebase.storage: rules file storage.rules compiled successfully 
+[debug] [2026-08-30T14:07:52.768Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:52.769Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:52.770Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases pageSize=10&pageToken=
+[debug] [2026-08-30T14:07:53.601Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases 200
+[debug] [2026-08-30T14:07:53.601Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases {"releases":[{"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/9b11f867-1af8-42b8-9b02-59785c2741fb","createTime":"2025-06-13T03:22:01.529475Z","updateTime":"2025-06-13T03:22:01.529475Z"},{"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/8dd30e13-06c6-4ad5-9ca2-4159c311be3a","createTime":"2026-08-30T14:07:15.733417Z","updateTime":"2026-08-30T14:07:15.733417Z"}]}
+[debug] [2026-08-30T14:07:53.620Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:53.620Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:53.621Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/8dd30e13-06c6-4ad5-9ca2-4159c311be3a [none]
+[debug] [2026-08-30T14:07:54.461Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/8dd30e13-06c6-4ad5-9ca2-4159c311be3a 200
+[debug] [2026-08-30T14:07:54.461Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/8dd30e13-06c6-4ad5-9ca2-4159c311be3a [omitted]
+[info] i  storage: uploading rules storage.rules... 
+[debug] [2026-08-30T14:07:54.465Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:54.465Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:54.466Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [none]
+[debug] [2026-08-30T14:07:54.466Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [omitted]
+[debug] [2026-08-30T14:07:54.933Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets 200
+[debug] [2026-08-30T14:07:54.933Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets {"name":"projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488","source":{"files":[{"content":"rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    function isAdmin() { return request.auth != null && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin'; }\n    match /products/{fileName} { allow read: if true; allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*'); }\n    match /hero/{fileName} { allow read: if true; allow write: if isAdmin() && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*'); }\n  }\n}\n","name":"storage.rules"}]},"createTime":"2026-08-30T14:07:53.764591Z","metadata":{"services":["firebase.storage"]}}
+[debug] [2026-08-30T14:07:54.933Z] [rules] created ruleset projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488
+[debug] [2026-08-30T14:07:54.934Z] [rules] releasing firebase.storage/jozi-plug.firebasestorage.app with ruleset projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488
+[debug] [2026-08-30T14:07:54.935Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:54.935Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:07:54.935Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app [none]
+[debug] [2026-08-30T14:07:54.936Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app {"release":{"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488"}}
+[debug] [2026-08-30T14:07:55.944Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app 200
+[debug] [2026-08-30T14:07:55.944Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app {"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488","createTime":"2026-08-30T14:07:15.733417Z","updateTime":"2026-08-30T14:07:54.775547Z"}
+[debug] [2026-08-30T14:07:55.945Z] [rules] updated release projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app
+[info] +  storage: released rules storage.rules to firebase.storage 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/jozi-plug/overview
+[debug] [2026-08-30T14:11:03.923Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T14:11:03.978Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules
+[debug] [2026-08-30T14:11:03.979Z] CLI Version:   15.28.2
+[debug] [2026-08-30T14:11:03.980Z] Platform:      win32
+[debug] [2026-08-30T14:11:03.980Z] Node Version:  v24.19.0
+[debug] [2026-08-30T14:11:03.981Z] Detected Agent: codex_cli
+[debug] [2026-08-30T14:11:03.981Z] Time:          Sun Aug 30 2026 16:11:03 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T14:11:03.982Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T14:11:06.120Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T14:11:06.121Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T14:11:06.121Z] [iam] checking project jozi-plug for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-08-30T14:11:06.139Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:11:06.139Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:11:06.141Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T14:11:06.141Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:11:06.142Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-08-30T14:11:08.088Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 403
+[debug] [2026-08-30T14:11:08.089Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug","containerInfo":"jozi-plug","service":"cloudresourcemanager.googleapis.com","consumer":"projects/jozi-plug"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug"}]}]}}
+[debug] [2026-08-30T14:11:08.090Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-30T14:11:08.097Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:11:08.098Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:11:08.099Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com [none]
+[debug] [2026-08-30T14:11:08.099Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:11:09.980Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com 403
+[debug] [2026-08-30T14:11:09.980Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com [omitted]
+[error] 
+[error] Error: Request to https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-08-30T14:11:10.420Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "USER_PROJECT_DENIED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "service": "serviceusage.googleapis.com",
+            "consoleUrl": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug",
+            "containerInfo": "jozi-plug",
+            "consumer": "projects/jozi-plug"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developer console IAM admin",
+              "url": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-30T14:14:21.134Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T14:14:21.139Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules
+[debug] [2026-08-30T14:14:21.140Z] CLI Version:   15.28.2
+[debug] [2026-08-30T14:14:21.140Z] Platform:      win32
+[debug] [2026-08-30T14:14:21.140Z] Node Version:  v24.19.0
+[debug] [2026-08-30T14:14:21.141Z] Detected Agent: codex_cli
+[debug] [2026-08-30T14:14:21.142Z] Time:          Sun Aug 30 2026 16:14:21 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T14:14:21.142Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T14:14:23.112Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T14:14:23.113Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T14:14:23.113Z] [iam] checking project jozi-plug for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-08-30T14:14:23.132Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:14:23.133Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:14:23.135Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T14:14:23.135Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:14:23.135Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-08-30T14:14:25.599Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 403
+[debug] [2026-08-30T14:14:25.599Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug","consumer":"projects/jozi-plug","containerInfo":"jozi-plug","service":"cloudresourcemanager.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug"}]}]}}
+[debug] [2026-08-30T14:14:25.601Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-30T14:14:25.606Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:14:25.607Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:14:25.607Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com [none]
+[debug] [2026-08-30T14:14:25.608Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:14:27.585Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com 403
+[debug] [2026-08-30T14:14:27.585Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com [omitted]
+[error] 
+[error] Error: Request to https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-08-30T14:14:28.227Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "USER_PROJECT_DENIED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "containerInfo": "jozi-plug",
+            "consoleUrl": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug",
+            "consumer": "projects/jozi-plug",
+            "service": "serviceusage.googleapis.com"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developer console IAM admin",
+              "url": "https://console.developers.google.com/iam-admin/iam?project=jozi-plug"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-30T14:16:49.442Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T14:16:49.448Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only storage
+[debug] [2026-08-30T14:16:49.449Z] CLI Version:   15.28.2
+[debug] [2026-08-30T14:16:49.449Z] Platform:      win32
+[debug] [2026-08-30T14:16:49.449Z] Node Version:  v24.19.0
+[debug] [2026-08-30T14:16:49.450Z] Detected Agent: codex_cli
+[debug] [2026-08-30T14:16:49.450Z] Time:          Sun Aug 30 2026 16:16:49 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T14:16:49.451Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T14:16:51.402Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T14:16:51.403Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T14:16:51.403Z] [iam] checking project jozi-plug for permissions ["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-08-30T14:16:51.428Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:51.429Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:51.430Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T14:16:51.431Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T14:16:51.431Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["firebase.projects.get","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-08-30T14:16:53.628Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 403
+[debug] [2026-08-30T14:16:53.629Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"consumer":"projects/jozi-plug","service":"cloudresourcemanager.googleapis.com","consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug","containerInfo":"jozi-plug"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=jozi-plug"}]}]}}
+[debug] [2026-08-30T14:16:53.631Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project jozi-plug. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=jozi-plug and then retry. Propagation of the new permission may take a few minutes.
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying storage 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-08-30T14:16:53.637Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:53.638Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:53.638Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket [none]
+[debug] [2026-08-30T14:16:54.604Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket 200
+[debug] [2026-08-30T14:16:54.604Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/jozi-plug/defaultBucket {"name":"projects/jozi-plug/defaultBucket","location":"US-EAST1","bucket":{"name":"projects/jozi-plug/buckets/jozi-plug.firebasestorage.app"},"storageClass":"REGIONAL"}
+[info] i  firebase.storage: checking storage.rules for compilation errors... 
+[debug] [2026-08-30T14:16:54.607Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:54.607Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:54.607Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [none]
+[debug] [2026-08-30T14:16:54.608Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [omitted]
+[debug] [2026-08-30T14:16:55.841Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test 200
+[debug] [2026-08-30T14:16:55.841Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test {}
+[info] +  firebase.storage: rules file storage.rules compiled successfully 
+[debug] [2026-08-30T14:16:55.843Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:55.843Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:55.844Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases pageSize=10&pageToken=
+[debug] [2026-08-30T14:16:56.697Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases 200
+[debug] [2026-08-30T14:16:56.697Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases {"releases":[{"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/9b11f867-1af8-42b8-9b02-59785c2741fb","createTime":"2025-06-13T03:22:01.529475Z","updateTime":"2025-06-13T03:22:01.529475Z"},{"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488","createTime":"2026-08-30T14:07:15.733417Z","updateTime":"2026-08-30T14:07:54.775547Z"}]}
+[debug] [2026-08-30T14:16:56.716Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:56.716Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:56.716Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488 [none]
+[debug] [2026-08-30T14:16:57.583Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488 200
+[debug] [2026-08-30T14:16:57.583Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/493cb4ea-4c76-442f-a43a-26efb305d488 [omitted]
+[info] i  storage: uploading rules storage.rules... 
+[debug] [2026-08-30T14:16:57.586Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:57.586Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:57.586Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [none]
+[debug] [2026-08-30T14:16:57.586Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [omitted]
+[debug] [2026-08-30T14:16:58.572Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets 200
+[debug] [2026-08-30T14:16:58.572Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets {"name":"projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a","source":{"files":[{"content":"rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    function isBootstrapAdmin() {\n      return request.auth != null && (\n        request.auth.token.email == 'kroonluxe@gmail.com' ||\n        request.auth.token.email == 'bonginkosiconsider@gmail.com'\n      );\n    }\n    function isAdmin() {\n      return isBootstrapAdmin() ||\n        (request.auth != null && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');\n    }\n    match /products/{fileName} { allow read: if true; allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*'); }\n    match /hero/{fileName} { allow read: if true; allow write: if isAdmin() && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*'); }\n  }\n}\n","name":"storage.rules"}]},"createTime":"2026-08-30T14:16:57.405167Z","metadata":{"services":["firebase.storage"]}}
+[debug] [2026-08-30T14:16:58.573Z] [rules] created ruleset projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a
+[debug] [2026-08-30T14:16:58.574Z] [rules] releasing firebase.storage/jozi-plug.firebasestorage.app with ruleset projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a
+[debug] [2026-08-30T14:16:58.574Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:58.575Z] Checked if tokens are valid: true, expires at: 1788101672783
+[debug] [2026-08-30T14:16:58.575Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app [none]
+[debug] [2026-08-30T14:16:58.575Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app {"release":{"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a"}}
+[debug] [2026-08-30T14:16:59.662Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app 200
+[debug] [2026-08-30T14:16:59.662Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app {"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a","createTime":"2026-08-30T14:07:15.733417Z","updateTime":"2026-08-30T14:16:58.444244Z"}
+[debug] [2026-08-30T14:16:59.663Z] [rules] updated release projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app
+[info] +  storage: released rules storage.rules to firebase.storage 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/jozi-plug/overview
+[debug] [2026-08-30T15:34:21.080Z] ----------------------------------------------------------------------
+[debug] [2026-08-30T15:34:21.084Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules
+[debug] [2026-08-30T15:34:21.084Z] CLI Version:   15.28.2
+[debug] [2026-08-30T15:34:21.085Z] Platform:      win32
+[debug] [2026-08-30T15:34:21.085Z] Node Version:  v24.19.0
+[debug] [2026-08-30T15:34:21.085Z] Detected Agent: codex_cli
+[debug] [2026-08-30T15:34:21.086Z] Time:          Sun Aug 30 2026 17:34:21 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-30T15:34:21.086Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-30T15:34:24.233Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-30T15:34:24.233Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-30T15:34:24.234Z] [iam] checking project jozi-plug for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-08-30T15:34:24.272Z] Checked if tokens are valid: false, expires at: 1788101672783
+[debug] [2026-08-30T15:34:24.273Z] Checked if tokens are valid: false, expires at: 1788101672783
+[debug] [2026-08-30T15:34:24.273Z] > refreshing access token with scopes: []
+[debug] [2026-08-30T15:34:24.277Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-08-30T15:34:24.277Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-30T15:34:24.775Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-08-30T15:34:24.776Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-30T15:34:24.790Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-30T15:34:24.791Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T15:34:24.791Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-08-30T15:34:25.577Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 200
+[debug] [2026-08-30T15:34:25.577Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-30T15:34:25.583Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:25.584Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:25.584Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com [none]
+[debug] [2026-08-30T15:34:25.584Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com  x-goog-user-project=jozi-plug
+[debug] [2026-08-30T15:34:27.692Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com 200
+[debug] [2026-08-30T15:34:27.692Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/jozi-plug/services/firestore.googleapis.com [omitted]
+[info] +  firestore: required API firestore.googleapis.com is enabled 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-30T15:34:27.700Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:27.700Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:27.700Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/jozi-plug/databases/(default) [none]
+[debug] [2026-08-30T15:34:29.439Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/jozi-plug/databases/(default) 200
+[debug] [2026-08-30T15:34:29.440Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/jozi-plug/databases/(default) {"name":"projects/jozi-plug/databases/(default)","uid":"381aa1d9-32c1-4dba-b2d8-69d07c0d288e","createTime":"2025-06-13T03:21:55.951086Z","updateTime":"2025-06-13T03:21:55.951086Z","locationId":"nam5","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-30T14:34:28.623211Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"s","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","enhancedTextSearchQueryMode":"ENHANCED_QUERY_MODE_ENABLED","etag":"IKrS097WyJYDMP3Q27az5pID"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-08-30T15:34:29.441Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:29.442Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:29.442Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [none]
+[debug] [2026-08-30T15:34:29.442Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [omitted]
+[debug] [2026-08-30T15:34:30.654Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test 200
+[debug] [2026-08-30T15:34:30.655Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test {}
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-08-30T15:34:30.657Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:30.657Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:30.658Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases pageSize=10&pageToken=
+[debug] [2026-08-30T15:34:31.013Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases 200
+[debug] [2026-08-30T15:34:31.014Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases {"releases":[{"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/9b11f867-1af8-42b8-9b02-59785c2741fb","createTime":"2025-06-13T03:22:01.529475Z","updateTime":"2025-06-13T03:22:01.529475Z"},{"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a","createTime":"2026-08-30T14:07:15.733417Z","updateTime":"2026-08-30T14:16:58.444244Z"}]}
+[debug] [2026-08-30T15:34:31.038Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:31.038Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:31.039Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/9b11f867-1af8-42b8-9b02-59785c2741fb [none]
+[debug] [2026-08-30T15:34:31.907Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/9b11f867-1af8-42b8-9b02-59785c2741fb 200
+[debug] [2026-08-30T15:34:31.907Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/9b11f867-1af8-42b8-9b02-59785c2741fb [omitted]
+[info] i  firestore: uploading rules firestore.rules... 
+[debug] [2026-08-30T15:34:31.909Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:31.910Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:31.910Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [none]
+[debug] [2026-08-30T15:34:31.910Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [omitted]
+[debug] [2026-08-30T15:34:32.516Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets 200
+[debug] [2026-08-30T15:34:32.516Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets {"name":"projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745","source":{"files":[{"content":"rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function signedIn() { return request.auth != null; }\n    function isBootstrapAdmin() {\n      return signedIn() && (\n        request.auth.token.email == 'kroonluxe@gmail.com' ||\n        request.auth.token.email == 'bonginkosiconsider@gmail.com'\n      );\n    }\n    function isAdmin() {\n      return isBootstrapAdmin() ||\n        (signedIn() &&\n          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&\n          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');\n    }\n\n    match /users/{userId} {\n      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());\n      allow create: if isAdmin() || (signedIn() && request.auth.uid == userId && request.resource.data.role == 'customer');\n      allow update: if isAdmin() || (request.auth.uid == userId && request.resource.data.role == resource.data.role);\n      allow delete: if isAdmin();\n    }\n\n    match /products/{productId} {\n      allow read: if resource.data.isPublished == true || isAdmin();\n      allow create, update, delete: if isAdmin();\n    }\n\n    match /orders/{orderId} {\n      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;\n      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);\n      allow update: if isAdmin();\n      allow delete: if false;\n    }\n\n    match /referrals/{referralId} { allow read, write: if isAdmin(); }\n    match /settings/{settingId} { allow read: if true; allow write: if isAdmin(); }\n    match /shippingZones/{zoneId} { allow read, write: if isAdmin(); }\n    match /taxRates/{rateId} { allow read, write: if isAdmin(); }\n    match /returns/{returnId} { allow read, write: if isAdmin(); }\n    match /payouts/{payoutId} { allow read, write: if isAdmin(); }\n    match /categories/{categoryId} { allow read: if true; allow write: if isAdmin(); }\n  }\n}\n","name":"firestore.rules"}]},"createTime":"2026-08-30T15:34:31.659311Z","metadata":{"services":["cloud.firestore"]}}
+[debug] [2026-08-30T15:34:32.517Z] [rules] created ruleset projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745
+[debug] [2026-08-30T15:34:32.518Z] [rules] releasing cloud.firestore with ruleset projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745
+[debug] [2026-08-30T15:34:32.518Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:32.518Z] Checked if tokens are valid: true, expires at: 1788107663776
+[debug] [2026-08-30T15:34:32.519Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore [none]
+[debug] [2026-08-30T15:34:32.519Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore {"release":{"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745"}}
+[debug] [2026-08-30T15:34:33.624Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore 200
+[debug] [2026-08-30T15:34:33.624Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore {"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745","createTime":"2025-06-13T03:22:01.529475Z","updateTime":"2026-08-30T15:34:32.707485Z"}
+[debug] [2026-08-30T15:34:33.625Z] [rules] updated release projects/jozi-plug/releases/cloud.firestore
+[info] +  firestore: released rules firestore.rules to cloud.firestore 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/jozi-plug/overview
