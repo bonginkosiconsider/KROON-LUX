@@ -14,6 +14,11 @@ service cloud.firestore {
           exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
+    function approvedPromoter(promoterId) {
+      return promoterId is string &&
+        exists(/databases/$(database)/documents/promoters/$(promoterId)) &&
+        get(/databases/$(database)/documents/promoters/$(promoterId)).data.status == 'approved';
+    }
 
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
@@ -42,7 +47,45 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /referrals/{referralId} { allow read, write: if isAdmin(); }
+    match /promoters/{promoterId} {
+      allow read: if isAdmin() ||
+        resource.data.status == 'approved' ||
+        (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin() ||
+        (signedIn() &&
+          promoterId == request.resource.data.code &&
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.discountPercent == 10);
+      allow update, delete: if isAdmin();
+    }
+
+    match /promoterCodes/{code} {
+      allow read: if true;
+      allow create: if isAdmin() ||
+        (signedIn() &&
+          code == request.resource.data.code &&
+          request.resource.data.promoterId == code &&
+          request.resource.data.status == 'pending');
+      allow update, delete: if isAdmin();
+    }
+
+    match /referrals/{referralId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);
+      allow create: if isAdmin() ||
+        (approvedPromoter(request.resource.data.promoterId) &&
+          request.resource.data.type in ['visit', 'code_entry'] &&
+          request.resource.data.status in ['captured', 'authenticated'] &&
+          (!('customerId' in request.resource.data) ||
+            request.resource.data.customerId == null ||
+            (signedIn() && request.resource.data.customerId == request.auth.uid))) ||
+        (signedIn() &&
+          approvedPromoter(request.resource.data.promoterId) &&
+          request.resource.data.customerId == request.auth.uid &&
+          request.resource.data.type == 'checkout' &&
+          request.resource.data.status == 'converted');
+      allow update, delete: if isAdmin();
+    }
     match /settings/{settingId} { allow read: if true; allow write: if isAdmin(); }
     match /shippingZones/{zoneId} { allow read, write: if isAdmin(); }
     match /taxRates/{rateId} { allow read, write: if isAdmin(); }

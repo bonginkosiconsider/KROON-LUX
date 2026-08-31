@@ -27,6 +27,7 @@ function orderNumber() {
 
 export async function createPendingCheckout(input: z.infer<typeof checkoutSchema>) {
   const user = await getCurrentUser();
+  if (!user) throw new Error("AUTH_REQUIRED");
   const cart = await readCart();
   if (cart.items.length === 0) throw new Error("CART_EMPTY");
 

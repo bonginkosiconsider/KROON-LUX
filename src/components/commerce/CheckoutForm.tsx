@@ -4,7 +4,11 @@ import { FormEvent, useState } from "react";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { useFirebaseCart } from "@/hooks/use-firebase-cart";
 import { useProducts } from "@/hooks/use-products";
-import { resolveFirebaseCartLines } from "@/lib/firebase-product-adapter";
+import {
+  effectiveVariantPriceInCents,
+  resolveFirebaseCartLines,
+  variantDescriptor,
+} from "@/lib/firebase-product-adapter";
 import { createFirebaseCheckout } from "@/services/firebase-orders";
 
 type CheckoutFormProps = {
@@ -24,15 +28,46 @@ export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) 
     event.preventDefault();
     setPending(true);
     setMessage(null);
+
     const formData = new FormData(event.currentTarget);
     const lines = resolveFirebaseCartLines(products, items);
-    const total = lines.reduce((sum, line) => sum + (line.variant.salePrice ?? line.variant.price) * line.quantity, 0) + (lines.length ? 95 : 0);
+
     try {
-      await createFirebaseCheckout({ firstName: String(formData.get("firstName")), lastName: String(formData.get("lastName")), email: String(formData.get("email")), phone: String(formData.get("phone") || ""), address: [formData.get("address"), formData.get("apartment"), formData.get("city"), formData.get("province"), formData.get("postalCode"), formData.get("country")].filter(Boolean).join(", ") }, lines.map(({ product, variant, quantity }) => ({ productId: product.id, variationId: variant.variationId, title: product.productType === "variable" ? `${product.title} - ${variant.name}` : product.title, quantity, unitPrice: variant.salePrice ?? variant.price, sku: variant.sku, attributes: variant.attributes, imageUrl: variant.imageUrl ?? product.imageUrls[0] })), total);
+      await createFirebaseCheckout(
+        {
+          firstName: String(formData.get("firstName") ?? ""),
+          lastName: String(formData.get("lastName") ?? ""),
+          email: String(formData.get("email") ?? ""),
+          phone: String(formData.get("phone") || ""),
+          address: [
+            formData.get("address"),
+            formData.get("apartment"),
+            formData.get("city"),
+            formData.get("province"),
+            formData.get("postalCode"),
+            formData.get("country"),
+          ]
+            .filter(Boolean)
+            .join(", "),
+        },
+        lines.map(({ product, variant, quantity }) => ({
+          productId: product.id,
+          variationId: variant.variationId,
+          title: product.productType === "variable" ? `${product.title} - ${variantDescriptor(variant)}` : product.title,
+          quantity,
+          unitPrice: effectiveVariantPriceInCents(variant) / 100,
+          sku: variant.sku,
+          attributes: variant.attributes,
+          imageUrl: variant.imageUrl ?? product.imageUrls[0],
+        })),
+      );
       clear();
       setMessage("Order created successfully. It is pending payment confirmation.");
-    } catch (error) { setMessage(error instanceof Error ? error.message : "Checkout could not be created."); }
-    finally { setPending(false); }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Checkout could not be created.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -89,4 +124,3 @@ export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) 
     </form>
   );
 }
-

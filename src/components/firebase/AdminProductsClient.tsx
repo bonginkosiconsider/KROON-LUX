@@ -1,10 +1,10 @@
 "use client";
 
-<<<<<<< HEAD
-import { FormEvent, useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { ProductMediaDropzone, type ProductMediaItem } from "@/components/firebase/ProductMediaDropzone";
 import { useAdminCategories } from "@/hooks/use-admin-categories";
 import { useProducts } from "@/hooks/use-products";
+import { useStoreTaxonomies } from "@/hooks/use-store-taxonomies";
 import {
   slugify,
   type BackorderPolicy,
@@ -66,6 +66,8 @@ type ProductFormState = {
   tags: string;
   status: ProductStatus;
   visibility: ProductVisibility;
+  brandId: string;
+  collectionIds: string[];
   featured: boolean;
 };
 
@@ -104,6 +106,8 @@ const visibilityOptions: { value: ProductVisibility; label: string }[] = [
   { value: "hidden", label: "Hidden" },
 ];
 
+type CatalogView = "list" | "grid";
+
 const blankDimensions: FormDimensions = { length: "", width: "", height: "" };
 
 const emptyForm: ProductFormState = {
@@ -131,6 +135,8 @@ const emptyForm: ProductFormState = {
   tags: "",
   status: "draft",
   visibility: "shop-and-search",
+  brandId: "",
+  collectionIds: [],
   featured: false,
 };
 
@@ -227,7 +233,16 @@ function variationFromProduct(variation: ProductVariation): FormVariation {
 }
 
 function formFromProduct(product: Product | null): ProductFormState {
-  if (!product) return { ...emptyForm, dimensions: { ...blankDimensions }, attributes: [], variations: [], categories: [] };
+  if (!product) {
+    return {
+      ...emptyForm,
+      dimensions: { ...blankDimensions },
+      attributes: [],
+      variations: [],
+      categories: [],
+      collectionIds: [],
+    };
+  }
 
   return {
     title: product.title,
@@ -258,6 +273,8 @@ function formFromProduct(product: Product | null): ProductFormState {
     tags: product.tags?.join(", ") ?? "",
     status: product.status ?? (product.isPublished ? "published" : "draft"),
     visibility: product.visibility ?? "shop-and-search",
+    brandId: text(product.brandId),
+    collectionIds: product.collectionIds ? [...product.collectionIds] : [],
     featured: product.featured,
   };
 }
@@ -318,38 +335,83 @@ function friendlySaveError(error: unknown) {
   }
   return "Please try again.";
 }
-=======
-import { FormEvent, useState } from "react";
-import { ProductMediaDropzone, type ProductMediaItem } from "@/components/firebase/ProductMediaDropzone";
-import { useAdminCategories } from "@/hooks/use-admin-categories";
-import { useProducts } from "@/hooks/use-products";
-import { useStoreTaxonomies } from "@/hooks/use-store-taxonomies";
-import type { Product, ProductInput } from "@/lib/firebase-models";
-import { createProduct, removeProduct, updateProduct } from "@/services/firebase-products";
-import { uploadProductImage } from "@/services/firebase-storage";
 
-const empty = { id: "", title: "", slug: "", description: "", shortDescription: "", price: 0, inventoryCount: 0, category: "", imageUrls: [], isPublished: false, featured: false, createdAt: null, updatedAt: null } as Product;
->>>>>>> 736422f (Build functional admin product manager)
+function productStatusValue(product: Pick<Product, "status" | "isPublished">) {
+  return product.status ?? (product.isPublished ? "published" : "draft");
+}
+
+function productStatusLabel(product: Pick<Product, "status" | "isPublished">) {
+  const value = productStatusValue(product);
+  return statusOptions.find((option) => option.value === value)?.label ?? (value === "published" ? "Published" : "Draft");
+}
 
 export function AdminProductsClient() {
   const { products, loading } = useProducts(false);
-  const categories = useAdminCategories();
+  const categoryOptions = useAdminCategories();
   const { items: brands } = useStoreTaxonomies("brands");
   const { items: collections } = useStoreTaxonomies("collections");
+  const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
-<<<<<<< HEAD
   const [form, setForm] = useState<ProductFormState>(() => formFromProduct(null));
   const [slugTouched, setSlugTouched] = useState(false);
   const [tab, setTab] = useState<Tab>("General");
   const [media, setMedia] = useState<ProductMediaItem[]>([]);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [catalogBusy, setCatalogBusy] = useState(false);
+  const [catalogView, setCatalogView] = useState<CatalogView>("list");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const matrixCount = useMemo(() => variationMatrix(form.attributes).length, [form.attributes]);
   const seoTitle = form.metaTitle.trim() || form.title.trim() || "Product title";
   const seoDescription = form.metaDescription.trim() || form.shortDescription.trim() || form.description.trim().slice(0, 160);
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const selectedProducts = useMemo(() => products.filter((product) => selectedSet.has(product.id)), [products, selectedSet]);
+  const allSelected = products.length > 0 && selectedProducts.length === products.length;
+  const previewProduct = useMemo<Product>(() => {
+    const previewCategories = form.categories.length ? form.categories : ["Uncategorized"];
+    const previewBrand = brands.find((item) => item.id === form.brandId)?.name ?? "";
+    const previewVariations = form.productType === "variable" ? form.variations.map((variation) => variationPayload(variation, form.price)) : [];
 
-  function startEdit(next: Product | null) {
+    return {
+      id: editing?.id ?? "preview-product",
+      title: form.title.trim() || "Product title",
+      slug: form.slug.trim() || slugify(form.title || "product"),
+      description: form.description,
+      price: numberOrZero(form.price),
+      salePrice: numberOrUndefined(form.salePrice),
+      productType: form.productType,
+      shortDescription: text(form.shortDescription),
+      sku: form.sku.trim(),
+      manageStock: form.manageStock,
+      stockStatus: form.stockStatus,
+      lowStockThreshold: numberOrZero(form.lowStockThreshold || "5"),
+      backorders: form.backorders,
+      weight: numberOrUndefined(form.weight),
+      dimensions: cleanDimensions(form.dimensions),
+      shippingClass: form.shippingClass,
+      attributes: cleanAttributes(form.attributes),
+      variations: previewVariations,
+      metaTitle: form.metaTitle,
+      metaDescription: form.metaDescription,
+      categories: previewCategories,
+      tags: splitValues(form.tags),
+      status: form.status,
+      visibility: form.visibility,
+      category: previewCategories[0],
+      brandId: form.brandId,
+      brandName: previewBrand,
+      collectionIds: [...form.collectionIds],
+      inventoryCount: numberOrZero(form.inventoryCount),
+      imageUrls: media.map((item) => item.url),
+      isPublished: form.status === "published",
+      featured: form.featured,
+      createdAt: null,
+      updatedAt: null,
+    };
+  }, [brands, editing?.id, form, media]);
+
+  function loadEditorProduct(next: Product | null) {
     setMedia((current) => {
       current.forEach((item) => {
         if (item.file) URL.revokeObjectURL(item.url);
@@ -360,7 +422,19 @@ export function AdminProductsClient() {
     setForm(formFromProduct(next));
     setSlugTouched(Boolean(next?.slug));
     setTab("General");
+  }
+
+  function startEditor(next: Product | null) {
+    loadEditorProduct(next);
+    setSelectedIds([]);
+    setEditorOpen(true);
     setMessage("");
+  }
+
+  function closeEditor() {
+    loadEditorProduct(null);
+    setSelectedIds([]);
+    setEditorOpen(false);
   }
 
   function updateTitle(title: string) {
@@ -467,6 +541,13 @@ export function AdminProductsClient() {
     }));
   }
 
+  function toggleCollection(id: string, checked: boolean) {
+    setForm((current) => ({
+      ...current,
+      collectionIds: checked ? [...new Set([...current.collectionIds, id])] : current.collectionIds.filter((item) => item !== id),
+    }));
+  }
+
   function addMedia(files: File[]) {
     setMedia((current) => [...current, ...files.map((file) => ({ id: `upload-${newVariationId()}`, file, url: URL.createObjectURL(file) }))]);
   }
@@ -488,20 +569,89 @@ export function AdminProductsClient() {
       next.splice(to, 0, moved);
       return next;
     });
-=======
-  const [media, setMedia] = useState<ProductMediaItem[]>([]);
-  const [message, setMessage] = useState("");
-  const [saving, setSaving] = useState(false);
-  const product = editing ?? empty;
-
-  function startEdit(next: Product | null) {
-    setMedia((current) => { current.forEach((item) => { if (item.file) URL.revokeObjectURL(item.url); }); return (next?.imageUrls ?? []).map((url, index) => ({ id: `saved-${index}-${url}`, url })); });
-    setEditing(next); setMessage("");
->>>>>>> 736422f (Build functional admin product manager)
   }
-  function addMedia(files: File[]) { setMedia((current) => [...current, ...files.map((file) => ({ id: `upload-${crypto.randomUUID()}`, file, url: URL.createObjectURL(file) }))]); }
-  function removeMedia(id: string) { setMedia((current) => current.filter((item) => { if (item.id === id && item.file) URL.revokeObjectURL(item.url); return item.id !== id; })); }
-  function reorderMedia(fromId: string, toId: string) { setMedia((current) => { const from = current.findIndex((item) => item.id === fromId); const to = current.findIndex((item) => item.id === toId); if (from < 0 || to < 0) return current; const next = [...current]; const [moved] = next.splice(from, 1); next.splice(to, 0, moved); return next; }); }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  }
+
+  function toggleAll() {
+    setSelectedIds(allSelected ? [] : products.map((product) => product.id));
+  }
+
+  async function withCatalogAction(action: () => Promise<void>) {
+    setCatalogBusy(true);
+    try {
+      await action();
+    } finally {
+      setCatalogBusy(false);
+    }
+  }
+
+  async function updateProductStatus(product: Product, status: ProductStatus) {
+    const label = statusOptions.find((option) => option.value === status)?.label ?? status;
+    try {
+      await withCatalogAction(async () => {
+        await updateProduct(product.id, { status });
+      });
+      if (editing?.id === product.id) {
+        setForm((current) => ({ ...current, status }));
+      }
+      setMessage(`${product.title} is now ${label.toLowerCase()}.`);
+    } catch (error) {
+      setMessage(`Product could not be updated. ${friendlySaveError(error)}`);
+    }
+  }
+
+  async function removeCatalogProduct(product: Product) {
+    const confirmed = confirm(`Delete ${product.title}?`);
+    if (!confirmed) return;
+
+    try {
+      await withCatalogAction(async () => {
+        await removeProduct(product.id);
+      });
+      if (editing?.id === product.id) closeEditor();
+      setSelectedIds((current) => current.filter((id) => id !== product.id));
+      setMessage(`${product.title} deleted.`);
+    } catch (error) {
+      setMessage(`Product could not be deleted. ${friendlySaveError(error)}`);
+    }
+  }
+
+  async function bulkUpdateStatus(status: ProductStatus) {
+    if (!selectedProducts.length) return;
+    const label = statusOptions.find((option) => option.value === status)?.label ?? status;
+
+    try {
+      await withCatalogAction(async () => {
+        await Promise.all(selectedProducts.map((product) => updateProduct(product.id, { status })));
+      });
+      if (editing && selectedSet.has(editing.id)) {
+        setForm((current) => ({ ...current, status }));
+      }
+      setSelectedIds([]);
+      setMessage(`${selectedProducts.length} product${selectedProducts.length === 1 ? "" : "s"} moved to ${label.toLowerCase()}.`);
+    } catch (error) {
+      setMessage(`Products could not be updated. ${friendlySaveError(error)}`);
+    }
+  }
+
+  async function bulkDelete() {
+    if (!selectedProducts.length) return;
+    if (!confirm(`Delete ${selectedProducts.length} selected product${selectedProducts.length === 1 ? "" : "s"}?`)) return;
+
+    try {
+      await withCatalogAction(async () => {
+        await Promise.all(selectedProducts.map((product) => removeProduct(product.id)));
+      });
+      if (editing && selectedSet.has(editing.id)) closeEditor();
+      setSelectedIds([]);
+      setMessage(`${selectedProducts.length} product${selectedProducts.length === 1 ? "" : "s"} deleted.`);
+    } catch (error) {
+      setMessage(`Products could not be deleted. ${friendlySaveError(error)}`);
+    }
+  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -531,7 +681,7 @@ export function AdminProductsClient() {
 
     try {
       const uploaded = await Promise.all(media.map((item) => item.file ? uploadProductImage(item.file) : item.url));
-<<<<<<< HEAD
+      const brand = brands.find((item) => item.id === form.brandId);
       const payload: ProductInput = {
         title,
         slug: form.slug.trim() || slugify(title),
@@ -556,6 +706,9 @@ export function AdminProductsClient() {
         categories: selectedCategories,
         category: selectedCategories[0],
         tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+        brandId: brand?.id ?? "",
+        brandName: brand?.name ?? "",
+        collectionIds: form.collectionIds,
         imageUrls: uploaded,
         status: form.status,
         visibility: form.visibility,
@@ -567,7 +720,8 @@ export function AdminProductsClient() {
       if (editing) await updateProduct(editing.id, payload);
       else await createProduct(payload);
 
-      startEdit(null);
+      closeEditor();
+      setSelectedIds([]);
       setMessage(wasEditing ? "Product updated successfully." : "Product created successfully.");
     } catch (error) {
       setMessage(`Could not save product. ${friendlySaveError(error)}`);
@@ -580,12 +734,30 @@ export function AdminProductsClient() {
     <div className="product-manager">
       <div className="product-manager-heading">
         <div>
-          <h2>{editing ? `Edit: ${editing.title}` : "Add new product"}</h2>
-          <p>Build catalog records with inventory, media, attributes, variations, and SEO.</p>
+          <h2>{editorOpen ? (editing ? `Edit: ${editing.title}` : "Add new product") : "Product catalog"}</h2>
+          <p>{editorOpen ? "Build catalog records with inventory, media, attributes, variations, taxonomies, and SEO." : "Browse products, switch between list and grid views, and keep drafts out of the storefront."}</p>
         </div>
-        {editing ? <button className="button button-secondary" onClick={() => startEdit(null)} type="button">Add new</button> : null}
+        <div className="admin-toolbar-actions">
+          <button className="button button-primary" onClick={() => startEditor(null)} type="button">
+            Add new product
+          </button>
+          {editorOpen ? (
+            <button className="button button-secondary" onClick={closeEditor} type="button">
+              Close editor
+            </button>
+          ) : null}
+          <div aria-label="Catalog layout" className="admin-view-toggle" role="tablist">
+            <button className={catalogView === "list" ? "active" : ""} onClick={() => setCatalogView("list")} type="button">
+              List
+            </button>
+            <button className={catalogView === "grid" ? "active" : ""} onClick={() => setCatalogView("grid")} type="button">
+              Grid
+            </button>
+          </div>
+        </div>
       </div>
 
+      {editorOpen ? (
       <form className="product-editor" onSubmit={save}>
         <div className="product-editor-main">
           <nav className="product-tabs" aria-label="Product editor sections">
@@ -864,11 +1036,56 @@ export function AdminProductsClient() {
           </section>
 
           <section className="admin-panel editor-panel">
+            <h3>Brand & collections</h3>
+            <label>
+              Brand
+              <select value={form.brandId} onChange={(event) => setForm((current) => ({ ...current, brandId: event.target.value }))}>
+                <option value="">No brand</option>
+                {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+              </select>
+            </label>
+            <div className="taxonomy-checklist">
+              {collections.map((collection) => (
+                <label key={collection.id}>
+                  <input type="checkbox" checked={form.collectionIds.includes(collection.id)} onChange={(event) => toggleCollection(collection.id, event.target.checked)} />
+                  {collection.name}
+                </label>
+              ))}
+            </div>
+            <p className="product-taxonomy-help">Manage brands and collections from the admin navigation.</p>
+          </section>
+
+          <section className="admin-panel editor-panel">
             <h3>Product media</h3>
             <ProductMediaDropzone media={media} onAddFiles={addMedia} onRemove={removeMedia} onReorder={reorderMedia} />
           </section>
+
+          <section className="admin-panel editor-panel admin-preview-panel">
+            <div className="section-heading tight">
+              <div>
+                <p className="eyebrow">Storefront preview</p>
+                <h3>{previewProduct.title}</h3>
+              </div>
+              <span className={`admin-status-pill admin-status-${productStatusValue(previewProduct)}`}>{productStatusLabel(previewProduct)}</span>
+            </div>
+            <article className="admin-product-preview">
+              <div className="admin-product-preview-media">
+                {previewProduct.imageUrls[0] ? <img alt={previewProduct.title} src={previewProduct.imageUrls[0]} /> : <div className="product-image product-image-empty" aria-hidden="true" />}
+              </div>
+              <div className="admin-product-preview-copy">
+                <p className="eyebrow">{previewProduct.categories?.[0] ?? previewProduct.category}</p>
+                <strong>{previewProduct.title}</strong>
+                <p>{previewProduct.shortDescription || previewProduct.description || "The storefront card appears here once you add content."}</p>
+                <div className="admin-product-preview-meta">
+                  <span>{productPriceLabel(previewProduct)}</span>
+                  <span>{productStockLabel(previewProduct)}</span>
+                </div>
+              </div>
+            </article>
+          </section>
         </aside>
       </form>
+      ) : null}
 
       {message ? <p className="form-message">{message}</p> : null}
 
@@ -880,48 +1097,126 @@ export function AdminProductsClient() {
           </div>
           <span>{loading ? "Loading..." : `${products.length} products`}</span>
         </div>
-        <div className="admin-table">
-          <div className="admin-table-row product-table-row admin-table-head">
-            <span>Product</span>
-            <span>Type</span>
-            <span>SKU</span>
-            <span>Price</span>
-            <span>Stock</span>
-            <span>Status</span>
-            <span>Actions</span>
+        <div className="admin-catalog-toolbar">
+          <p className="admin-catalog-summary">{selectedProducts.length ? `${selectedProducts.length} selected` : "Select products to draft or delete them in bulk."}</p>
+          <div className="admin-bulk-actions">
+            {selectedProducts.length ? (
+              <>
+                <button className="button button-secondary" disabled={catalogBusy} type="button" onClick={() => bulkUpdateStatus("draft")}>
+                  Draft selected
+                </button>
+                <button className="button button-primary" disabled={catalogBusy} type="button" onClick={() => bulkUpdateStatus("published")}>
+                  Publish selected
+                </button>
+                <button className="button button-secondary danger" disabled={catalogBusy} type="button" onClick={bulkDelete}>
+                  Delete selected
+                </button>
+                <button className="text-button" disabled={catalogBusy} type="button" onClick={() => setSelectedIds([])}>
+                  Clear
+                </button>
+              </>
+            ) : (
+              <button className="button button-secondary" disabled={!products.length || catalogBusy} type="button" onClick={toggleAll}>
+                Select all
+              </button>
+            )}
           </div>
-          {products.length ? products.map((item) => (
-            <div className="admin-table-row product-table-row" key={item.id}>
-              <span>
-                <strong>{item.title}</strong>
-                <small>{item.categories?.join(", ") || item.category}</small>
-              </span>
-              <span>{productTypeOptions.find((option) => option.value === item.productType)?.label ?? "Simple"}</span>
-              <span>{item.sku || "-"}</span>
-              <span>{productPriceLabel(item)}</span>
-              <span>{productStockLabel(item)}</span>
-              <span>{statusOptions.find((option) => option.value === item.status)?.label ?? (item.isPublished ? "Published" : "Draft")}</span>
-              <span className="admin-actions">
-                <button type="button" className="text-button" onClick={() => startEdit(item)}>Edit</button>
-                <button type="button" className="text-button danger" onClick={() => { if (confirm(`Delete ${item.title}?`)) removeProduct(item.id).catch((error) => setMessage(`Product could not be deleted. ${friendlySaveError(error)}`)); }}>Delete</button>
-              </span>
-            </div>
-          )) : <p className="empty-catalog">No products have been created yet.</p>}
         </div>
+
+        {catalogView === "list" ? (
+          <div className="admin-table">
+            <div className="admin-table-row product-table-row admin-table-head">
+              <span>
+                <label className="admin-row-select admin-row-select-head">
+                  <input checked={allSelected} onChange={toggleAll} type="checkbox" />
+                  <span>Product</span>
+                </label>
+              </span>
+              <span>Brand</span>
+              <span>Type</span>
+              <span>SKU</span>
+              <span>Price</span>
+              <span>Stock</span>
+              <span>Status</span>
+              <span>Actions</span>
+            </div>
+            {products.length ? products.map((item) => {
+              const nextStatus = productStatusValue(item) === "published" ? "draft" : "published";
+
+              return (
+                <div className={`admin-table-row product-table-row${selectedSet.has(item.id) ? " is-selected" : ""}`} key={item.id}>
+                  <span>
+                    <label className="admin-row-select">
+                      <input checked={selectedSet.has(item.id)} onChange={() => toggleSelected(item.id)} type="checkbox" />
+                      <strong>{item.title}</strong>
+                    </label>
+                    <small>{item.categories?.join(", ") || item.category}</small>
+                  </span>
+                  <span>{item.brandName || "-"}</span>
+                  <span>{productTypeOptions.find((option) => option.value === item.productType)?.label ?? "Simple"}</span>
+                  <span>{item.sku || "-"}</span>
+                  <span>{productPriceLabel(item)}</span>
+                  <span>{productStockLabel(item)}</span>
+                  <span>
+                    <span className={`admin-status-pill admin-status-${productStatusValue(item)}`}>{productStatusLabel(item)}</span>
+                  </span>
+                  <span className="admin-actions">
+                    <button disabled={catalogBusy} type="button" className="text-button" onClick={() => startEditor(item)}>
+                      Edit
+                    </button>
+                    <button disabled={catalogBusy} type="button" className="text-button" onClick={() => updateProductStatus(item, nextStatus)}>
+                      {nextStatus === "published" ? "Publish" : "Draft"}
+                    </button>
+                    <button disabled={catalogBusy} type="button" className="text-button danger" onClick={() => removeCatalogProduct(item)}>
+                      Delete
+                    </button>
+                  </span>
+                </div>
+              );
+            }) : <p className="empty-catalog">No products have been created yet.</p>}
+          </div>
+        ) : (
+          <div className="admin-product-grid">
+            {products.length ? products.map((item) => {
+              const nextStatus = productStatusValue(item) === "published" ? "draft" : "published";
+
+              return (
+                <article className={`admin-product-card${selectedSet.has(item.id) ? " is-selected" : ""}`} key={item.id}>
+                  <div className="admin-product-card-media">
+                    {item.imageUrls[0] ? <img alt={item.title} src={item.imageUrls[0]} /> : <div className="product-image product-image-empty" aria-hidden="true" />}
+                    <label className="admin-product-card-select">
+                      <input checked={selectedSet.has(item.id)} onChange={() => toggleSelected(item.id)} type="checkbox" />
+                    </label>
+                    <span className={`admin-status-pill admin-status-${productStatusValue(item)}`}>{productStatusLabel(item)}</span>
+                  </div>
+                  <div className="admin-product-card-body">
+                    <div>
+                      <p className="eyebrow">{item.brandName || item.categories?.[0] || item.category}</p>
+                      <h3>{item.title}</h3>
+                      <p>{item.categories?.join(", ") || item.category}</p>
+                    </div>
+                    <div className="admin-product-card-meta">
+                      <strong>{productPriceLabel(item)}</strong>
+                      <span>{productStockLabel(item)}</span>
+                    </div>
+                    <div className="admin-actions">
+                      <button disabled={catalogBusy} type="button" className="text-button" onClick={() => startEditor(item)}>
+                        Edit
+                      </button>
+                      <button disabled={catalogBusy} type="button" className="text-button" onClick={() => updateProductStatus(item, nextStatus)}>
+                        {nextStatus === "published" ? "Publish" : "Draft"}
+                      </button>
+                      <button disabled={catalogBusy} type="button" className="text-button danger" onClick={() => removeCatalogProduct(item)}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            }) : <p className="empty-catalog">No products have been created yet.</p>}
+          </div>
+        )}
       </section>
     </div>
   );
-=======
-      const selectedCategories = categories.filter((name) => form.get(`category-${name}`) === "on");
-      const brand = brands.find((item) => item.id === String(form.get("brandId") ?? ""));
-      const collectionIds = collections.filter((item) => form.get(`collection-${item.id}`) === "on").map((item) => item.id);
-      const status = String(form.get("status")) as Product["status"];
-      const payload: ProductInput = { title: String(form.get("title")).trim(), slug: String(form.get("slug")), description: String(form.get("description")), shortDescription: String(form.get("shortDescription")), price: Number(form.get("price")), salePrice: form.get("salePrice") ? Number(form.get("salePrice")) : undefined, sku: String(form.get("sku")), inventoryCount: Number(form.get("inventoryCount")), stockStatus: String(form.get("inventoryCount")) === "0" ? "out-of-stock" : "in-stock", category: selectedCategories[0] ?? "Uncategorized", categories: selectedCategories, tags: String(form.get("tags") ?? "").split(",").map((tag) => tag.trim()).filter(Boolean), brandId: brand?.id ?? "", brandName: brand?.name ?? "", collectionIds, imageUrls: uploaded, status, visibility: "shop-and-search", isPublished: status === "published", featured: form.get("featured") === "on" };
-      if (editing) await updateProduct(editing.id, payload); else await createProduct(payload);
-      startEdit(null); setMessage(status === "published" ? "Product saved and published." : "Product saved as a draft.");
-    } catch (error) { setMessage(`Could not save product. ${error instanceof Error ? error.message : "Please try again."}`); } finally { setSaving(false); }
-  }
-
-  return <div className="product-manager"><div className="product-manager-heading"><div><h2>{editing ? `Edit: ${product.title}` : "Add new product"}</h2><p>Build a complete listing, assign it to a brand and collections, then publish when ready.</p></div>{editing ? <button className="button button-secondary" type="button" onClick={() => startEdit(null)}>Add new</button> : null}</div><form className="product-editor" key={editing?.id ?? "new"} onSubmit={save}><div className="product-editor-main"><section className="admin-panel editor-panel"><label>Product name<input name="title" defaultValue={product.title} required /></label><div className="form-grid"><label>Regular price (R)<input name="price" type="number" min="0" step="0.01" defaultValue={product.price} required /></label><label>Sale price (R)<input name="salePrice" type="number" min="0" step="0.01" defaultValue={product.salePrice} /></label><label>SKU<input name="sku" defaultValue={product.sku} /></label><label>Stock quantity<input name="inventoryCount" type="number" min="0" defaultValue={product.inventoryCount} /></label><label className="wide-field">Full description<textarea name="description" rows={7} defaultValue={product.description} /></label><label className="wide-field">Short description<textarea name="shortDescription" rows={3} defaultValue={product.shortDescription} /></label><label>Slug <small>(optional)</small><input name="slug" defaultValue={product.slug} /></label></div></section><section className="admin-panel editor-panel"><h3>Product media</h3><ProductMediaDropzone media={media} onAddFiles={addMedia} onRemove={removeMedia} onReorder={reorderMedia} /></section></div><aside className="product-editor-aside"><section className="admin-panel editor-panel"><h3>Publish</h3><label>Status<select name="status" defaultValue={product.status ?? (product.isPublished ? "published" : "draft")}><option value="draft">Draft</option><option value="published">Published</option></select></label><label className="admin-checks"><input name="featured" type="checkbox" defaultChecked={product.featured} /> Featured product</label><button className="button button-primary" disabled={saving}>{saving ? "Saving…" : "Save product"}</button></section><section className="admin-panel editor-panel"><h3>Categories & tags</h3><div className="taxonomy-checklist">{categories.map((name) => <label key={name}><input name={`category-${name}`} type="checkbox" defaultChecked={product.categories?.includes(name) || product.category === name} />{name}</label>)}</div><label>Tags<input name="tags" defaultValue={product.tags?.join(", ")} placeholder="Comma-separated" /></label></section><section className="admin-panel editor-panel"><h3>Brand & collections</h3><label>Brand<select name="brandId" defaultValue={product.brandId ?? ""}><option value="">No brand</option>{brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label><div className="taxonomy-checklist">{collections.map((collection) => <label key={collection.id}><input name={`collection-${collection.id}`} type="checkbox" defaultChecked={product.collectionIds?.includes(collection.id)} />{collection.name}</label>)}</div><p className="product-taxonomy-help">Manage brands and collections from the admin navigation.</p></section></aside></form>{message ? <p className="form-message">{message}</p> : null}<section className="admin-panel product-list-panel"><div className="section-heading tight"><div><p className="eyebrow">Catalogue</p><h2>All products</h2></div><span>{loading ? "Loading…" : `${products.length} products`}</span></div><div className="admin-table"><div className="admin-table-row admin-table-head"><span>Product</span><span>Brand</span><span>Price</span><span>Stock</span><span>Status</span><span>Actions</span></div>{products.map((item) => <div className="admin-table-row" key={item.id}><span><strong>{item.title}</strong><small>{item.categories?.join(", ") || item.category}</small></span><span>{item.brandName || "—"}</span><span>R {item.price.toFixed(2)}</span><span>{item.inventoryCount}</span><span>{item.status ?? (item.isPublished ? "published" : "draft")}</span><span className="admin-actions"><button type="button" className="text-button" onClick={() => startEdit(item)}>Edit</button><button type="button" className="text-button danger" onClick={() => { if (confirm(`Delete ${item.title}?`)) removeProduct(item.id).catch(() => setMessage("Product could not be deleted.")); }}>Delete</button></span></div>)}</div></section></div>;
->>>>>>> 736422f (Build functional admin product manager)
 }

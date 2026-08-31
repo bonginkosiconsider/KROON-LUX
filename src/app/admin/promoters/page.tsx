@@ -1,6 +1,6 @@
 import { LazyAdminWorkspace } from "@/components/firebase/LazyAdminWorkspace";
 
-export default function AdminReferralsPage() {
+export default function AdminPromotersPage() {
   return (
     <>
       <header className="admin-page-header">
@@ -14,4 +14,3 @@ export default function AdminReferralsPage() {
     </>
   );
 }
-

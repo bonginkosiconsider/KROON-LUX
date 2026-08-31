@@ -86,7 +86,13 @@ export type Order = {
   customerId?: string;
   customer: { name: string; email: string; phone?: string; address?: string };
   items: OrderItem[];
+  subtotalAmount?: number;
+  shippingAmount?: number;
+  discountAmount?: number;
   totalAmount: number;
+  referralCode?: string | null;
+  promoterId?: string | null;
+  referralDiscountPercent?: number | null;
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   shippingStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   createdAt: FirestoreTimestamp;

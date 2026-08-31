@@ -130,6 +130,7 @@ export function firebaseProductCard(product: Product) {
     name: product.title,
     slug: product.slug,
     shortDescription: product.shortDescription || product.description,
+    brand: product.brandName,
     images: product.imageUrls.map((url) => ({ url, altText: product.title })),
     category: { name: category, slug: categorySlug(category) },
     variants: productPurchasables(product),

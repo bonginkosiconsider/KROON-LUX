@@ -45,7 +45,8 @@ export function AccountClient() {
       <article>
         <p className="eyebrow">Referrals</p>
         <h2>Promoter dashboard</h2>
-        <p>Approved promoters will see click, order, revenue, and commission reporting here.</p>
+        <p>Apply for a unique promoter code or check your submitted application status.</p>
+        <Link className="text-link" href="/promoters/apply">Open promoter application</Link>
       </article>
     </section>
   );
