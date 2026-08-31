@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { FormEvent, useMemo, useState } from "react";
 import { ProductMediaDropzone, type ProductMediaItem } from "@/components/firebase/ProductMediaDropzone";
 import { useAdminCategories } from "@/hooks/use-admin-categories";
@@ -317,11 +318,26 @@ function friendlySaveError(error: unknown) {
   }
   return "Please try again.";
 }
+=======
+import { FormEvent, useState } from "react";
+import { ProductMediaDropzone, type ProductMediaItem } from "@/components/firebase/ProductMediaDropzone";
+import { useAdminCategories } from "@/hooks/use-admin-categories";
+import { useProducts } from "@/hooks/use-products";
+import { useStoreTaxonomies } from "@/hooks/use-store-taxonomies";
+import type { Product, ProductInput } from "@/lib/firebase-models";
+import { createProduct, removeProduct, updateProduct } from "@/services/firebase-products";
+import { uploadProductImage } from "@/services/firebase-storage";
+
+const empty = { id: "", title: "", slug: "", description: "", shortDescription: "", price: 0, inventoryCount: 0, category: "", imageUrls: [], isPublished: false, featured: false, createdAt: null, updatedAt: null } as Product;
+>>>>>>> 736422f (Build functional admin product manager)
 
 export function AdminProductsClient() {
   const { products, loading } = useProducts(false);
-  const categoryOptions = useAdminCategories();
+  const categories = useAdminCategories();
+  const { items: brands } = useStoreTaxonomies("brands");
+  const { items: collections } = useStoreTaxonomies("collections");
   const [editing, setEditing] = useState<Product | null>(null);
+<<<<<<< HEAD
   const [form, setForm] = useState<ProductFormState>(() => formFromProduct(null));
   const [slugTouched, setSlugTouched] = useState(false);
   const [tab, setTab] = useState<Tab>("General");
@@ -472,7 +488,20 @@ export function AdminProductsClient() {
       next.splice(to, 0, moved);
       return next;
     });
+=======
+  const [media, setMedia] = useState<ProductMediaItem[]>([]);
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  const product = editing ?? empty;
+
+  function startEdit(next: Product | null) {
+    setMedia((current) => { current.forEach((item) => { if (item.file) URL.revokeObjectURL(item.url); }); return (next?.imageUrls ?? []).map((url, index) => ({ id: `saved-${index}-${url}`, url })); });
+    setEditing(next); setMessage("");
+>>>>>>> 736422f (Build functional admin product manager)
   }
+  function addMedia(files: File[]) { setMedia((current) => [...current, ...files.map((file) => ({ id: `upload-${crypto.randomUUID()}`, file, url: URL.createObjectURL(file) }))]); }
+  function removeMedia(id: string) { setMedia((current) => current.filter((item) => { if (item.id === id && item.file) URL.revokeObjectURL(item.url); return item.id !== id; })); }
+  function reorderMedia(fromId: string, toId: string) { setMedia((current) => { const from = current.findIndex((item) => item.id === fromId); const to = current.findIndex((item) => item.id === toId); if (from < 0 || to < 0) return current; const next = [...current]; const [moved] = next.splice(from, 1); next.splice(to, 0, moved); return next; }); }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -502,6 +531,7 @@ export function AdminProductsClient() {
 
     try {
       const uploaded = await Promise.all(media.map((item) => item.file ? uploadProductImage(item.file) : item.url));
+<<<<<<< HEAD
       const payload: ProductInput = {
         title,
         slug: form.slug.trim() || slugify(title),
@@ -881,4 +911,17 @@ export function AdminProductsClient() {
       </section>
     </div>
   );
+=======
+      const selectedCategories = categories.filter((name) => form.get(`category-${name}`) === "on");
+      const brand = brands.find((item) => item.id === String(form.get("brandId") ?? ""));
+      const collectionIds = collections.filter((item) => form.get(`collection-${item.id}`) === "on").map((item) => item.id);
+      const status = String(form.get("status")) as Product["status"];
+      const payload: ProductInput = { title: String(form.get("title")).trim(), slug: String(form.get("slug")), description: String(form.get("description")), shortDescription: String(form.get("shortDescription")), price: Number(form.get("price")), salePrice: form.get("salePrice") ? Number(form.get("salePrice")) : undefined, sku: String(form.get("sku")), inventoryCount: Number(form.get("inventoryCount")), stockStatus: String(form.get("inventoryCount")) === "0" ? "out-of-stock" : "in-stock", category: selectedCategories[0] ?? "Uncategorized", categories: selectedCategories, tags: String(form.get("tags") ?? "").split(",").map((tag) => tag.trim()).filter(Boolean), brandId: brand?.id ?? "", brandName: brand?.name ?? "", collectionIds, imageUrls: uploaded, status, visibility: "shop-and-search", isPublished: status === "published", featured: form.get("featured") === "on" };
+      if (editing) await updateProduct(editing.id, payload); else await createProduct(payload);
+      startEdit(null); setMessage(status === "published" ? "Product saved and published." : "Product saved as a draft.");
+    } catch (error) { setMessage(`Could not save product. ${error instanceof Error ? error.message : "Please try again."}`); } finally { setSaving(false); }
+  }
+
+  return <div className="product-manager"><div className="product-manager-heading"><div><h2>{editing ? `Edit: ${product.title}` : "Add new product"}</h2><p>Build a complete listing, assign it to a brand and collections, then publish when ready.</p></div>{editing ? <button className="button button-secondary" type="button" onClick={() => startEdit(null)}>Add new</button> : null}</div><form className="product-editor" key={editing?.id ?? "new"} onSubmit={save}><div className="product-editor-main"><section className="admin-panel editor-panel"><label>Product name<input name="title" defaultValue={product.title} required /></label><div className="form-grid"><label>Regular price (R)<input name="price" type="number" min="0" step="0.01" defaultValue={product.price} required /></label><label>Sale price (R)<input name="salePrice" type="number" min="0" step="0.01" defaultValue={product.salePrice} /></label><label>SKU<input name="sku" defaultValue={product.sku} /></label><label>Stock quantity<input name="inventoryCount" type="number" min="0" defaultValue={product.inventoryCount} /></label><label className="wide-field">Full description<textarea name="description" rows={7} defaultValue={product.description} /></label><label className="wide-field">Short description<textarea name="shortDescription" rows={3} defaultValue={product.shortDescription} /></label><label>Slug <small>(optional)</small><input name="slug" defaultValue={product.slug} /></label></div></section><section className="admin-panel editor-panel"><h3>Product media</h3><ProductMediaDropzone media={media} onAddFiles={addMedia} onRemove={removeMedia} onReorder={reorderMedia} /></section></div><aside className="product-editor-aside"><section className="admin-panel editor-panel"><h3>Publish</h3><label>Status<select name="status" defaultValue={product.status ?? (product.isPublished ? "published" : "draft")}><option value="draft">Draft</option><option value="published">Published</option></select></label><label className="admin-checks"><input name="featured" type="checkbox" defaultChecked={product.featured} /> Featured product</label><button className="button button-primary" disabled={saving}>{saving ? "Saving…" : "Save product"}</button></section><section className="admin-panel editor-panel"><h3>Categories & tags</h3><div className="taxonomy-checklist">{categories.map((name) => <label key={name}><input name={`category-${name}`} type="checkbox" defaultChecked={product.categories?.includes(name) || product.category === name} />{name}</label>)}</div><label>Tags<input name="tags" defaultValue={product.tags?.join(", ")} placeholder="Comma-separated" /></label></section><section className="admin-panel editor-panel"><h3>Brand & collections</h3><label>Brand<select name="brandId" defaultValue={product.brandId ?? ""}><option value="">No brand</option>{brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label><div className="taxonomy-checklist">{collections.map((collection) => <label key={collection.id}><input name={`collection-${collection.id}`} type="checkbox" defaultChecked={product.collectionIds?.includes(collection.id)} />{collection.name}</label>)}</div><p className="product-taxonomy-help">Manage brands and collections from the admin navigation.</p></section></aside></form>{message ? <p className="form-message">{message}</p> : null}<section className="admin-panel product-list-panel"><div className="section-heading tight"><div><p className="eyebrow">Catalogue</p><h2>All products</h2></div><span>{loading ? "Loading…" : `${products.length} products`}</span></div><div className="admin-table"><div className="admin-table-row admin-table-head"><span>Product</span><span>Brand</span><span>Price</span><span>Stock</span><span>Status</span><span>Actions</span></div>{products.map((item) => <div className="admin-table-row" key={item.id}><span><strong>{item.title}</strong><small>{item.categories?.join(", ") || item.category}</small></span><span>{item.brandName || "—"}</span><span>R {item.price.toFixed(2)}</span><span>{item.inventoryCount}</span><span>{item.status ?? (item.isPublished ? "published" : "draft")}</span><span className="admin-actions"><button type="button" className="text-button" onClick={() => startEdit(item)}>Edit</button><button type="button" className="text-button danger" onClick={() => { if (confirm(`Delete ${item.title}?`)) removeProduct(item.id).catch(() => setMessage("Product could not be deleted.")); }}>Delete</button></span></div>)}</div></section></div>;
+>>>>>>> 736422f (Build functional admin product manager)
 }

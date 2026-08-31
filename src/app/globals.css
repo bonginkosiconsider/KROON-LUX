@@ -54,6 +54,55 @@ img {
   max-width: 100%;
 }
 
+.site-header-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.announcement-bar {
+  align-items: center;
+  background: var(--coal);
+  color: var(--paper);
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
+  justify-content: center;
+  min-height: 34px;
+  overflow: hidden;
+  padding: 8px 5vw;
+  width: 100%;
+}
+
+.announcement-bar-content {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  width: 100%;
+}
+
+.announcement-bar-message {
+  grid-area: 1 / 1;
+  margin: 0;
+  max-width: 100%;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  text-align: center;
+  text-overflow: ellipsis;
+  transition: opacity var(--announcement-transition-duration, 420ms) ease-in-out;
+  white-space: nowrap;
+  width: 100%;
+  font-size: clamp(9px, 1.25vw, 11px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.announcement-bar-message.is-active {
+  opacity: 1;
+}
+
 .site-header {
   align-items: center;
   background: rgba(247, 244, 238, 0.94);
@@ -63,9 +112,7 @@ img {
   grid-template-columns: auto 1fr auto;
   min-height: 76px;
   padding: 0 5vw;
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  position: relative;
   backdrop-filter: blur(14px);
 }
 
@@ -75,6 +122,12 @@ img {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announcement-bar-message {
+    transition-duration: 0ms;
+  }
 }
 
 .site-logo {
@@ -109,6 +162,21 @@ img {
 .site-nav {
   justify-content: center;
 }
+
+.brands-menu { position: relative; }
+.brands-menu-trigger { background: transparent; border: 0; color: inherit; font: inherit; letter-spacing: inherit; padding: 0; text-transform: inherit; }
+.brands-menu-trigger span { color: var(--gold-dark); font-size: 13px; margin-left: 3px; }
+.brands-menu-panel { background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 0; left: 50%; min-width: 180px; opacity: 0; padding: 8px 16px; pointer-events: none; position: absolute; top: calc(100% + 18px); transform: translate(-50%, -5px); transition: opacity 180ms ease, transform 180ms ease; visibility: hidden; }
+.brands-menu:hover .brands-menu-panel, .brands-menu:focus-within .brands-menu-panel, .brands-menu.is-open .brands-menu-panel { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); visibility: visible; }
+.brands-menu-panel a, .brands-menu-panel span { border-bottom: 1px solid var(--line); font-size: 10px; padding: 12px 0; white-space: nowrap; }
+.brands-menu-panel span { color: var(--muted); }.brands-menu-panel > :last-child { border-bottom: 0; }
+.brands-menu:hover .brands-menu-trigger, .brands-menu:focus-within .brands-menu-trigger, .brands-menu.is-open .brands-menu-trigger { color: var(--gold); }
+
+.collection-hero { border-bottom: 1px solid var(--line); padding: 44px 0 38px; }
+.collection-hero h1 { font-size: clamp(48px, 7vw, 90px); font-weight: 400; letter-spacing: -.04em; line-height: .95; margin: 0; }
+.collection-hero > p:not(.eyebrow) { color: var(--muted); font-size: 17px; line-height: 1.6; margin: 20px 0 0; max-width: 580px; }
+.collection-results { padding-top: 36px; }.collection-results > .empty-state { margin-top: 24px; }
+.taxonomy-list { display: grid; gap: 18px; }.taxonomy-row { border-top: 1px solid #dcdcde; display: grid; gap: 12px; padding-top: 18px; }.taxonomy-row:first-child { border-top: 0; padding-top: 0; }.product-taxonomy-help { color: #646970; font-size: 12px; margin: 0; }
 
 .header-actions {
   justify-content: end;
@@ -1122,6 +1190,9 @@ a:focus-visible {
     padding: 16px 0;
     text-transform: uppercase;
   }
+
+  .mobile-brands { border-bottom: 1px solid var(--line); font-family: Arial, Helvetica, sans-serif; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .mobile-brands summary { cursor: pointer; padding: 16px 0; }.mobile-brands[open] summary { border-bottom: 1px solid var(--line); }.mobile-brands a { display: block; padding-left: 14px; }
 }
 
 @media (max-width: 720px) {

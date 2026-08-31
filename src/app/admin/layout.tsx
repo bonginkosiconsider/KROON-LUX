@@ -8,7 +8,7 @@ import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { auth } from "@/lib/firebase";
 
 const navigation = [
-  ["/admin", "Overview"], ["/admin/products", "Products"], ["/admin/categories", "Categories"],
+  ["/admin", "Overview"], ["/admin/products", "Products"], ["/admin/categories", "Categories"], ["/admin/brands", "Brands"], ["/admin/collections", "Collections"],
   ["/admin/shipping-zones", "Shipping Zones"], ["/admin/tax-rates", "Tax Rates"], ["/admin/analytics", "Analytics"],
   ["/admin/orders", "Orders"], ["/admin/returns", "Returns"], ["/admin/payouts", "Payouts"],
   ["/admin/my-store", "My Store"], ["/admin/settings", "Settings"],

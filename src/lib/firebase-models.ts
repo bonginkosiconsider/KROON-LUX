@@ -50,6 +50,9 @@ export type Product = {
   status?: ProductStatus;
   visibility?: ProductVisibility;
   category: string;
+  brandId?: string;
+  brandName?: string;
+  collectionIds?: string[];
   inventoryCount: number;
   imageUrls: string[];
   isPublished: boolean;
@@ -59,6 +62,16 @@ export type Product = {
 };
 
 export type ProductInput = Omit<Product, "id" | "slug" | "createdAt" | "updatedAt"> & { slug?: string };
+
+export type StoreTaxonomy = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  sortOrder: number;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
+};
 
 export type OrderItem = {
   productId: string;

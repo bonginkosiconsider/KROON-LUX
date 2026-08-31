@@ -149,6 +149,7 @@ function mapProduct(id: string, value: Record<string, unknown>): Product {
   const category = stringValue(value.category, "Uncategorized").trim() || "Uncategorized";
   return {
     id,
+<<<<<<< HEAD
     title: stringValue(value.title, "Untitled product"),
     slug: stringValue(value.slug, id),
     description: stringValue(value.description),
@@ -176,6 +177,36 @@ function mapProduct(id: string, value: Record<string, unknown>): Product {
     inventoryCount: numericValue(value.inventoryCount, 0),
     imageUrls: stringArray(value.imageUrls),
     isPublished: value.isPublished !== false && value.status !== "draft",
+=======
+    title: String(value.title ?? "Untitled product"),
+    slug: String(value.slug ?? id),
+    description: String(value.description ?? ""),
+    price: Number(value.price ?? 0),
+    salePrice: value.salePrice === undefined ? undefined : Number(value.salePrice),
+    productType: (value.productType as Product["productType"]) ?? "simple",
+    shortDescription: String(value.shortDescription ?? ""),
+    sku: String(value.sku ?? ""),
+    stockStatus: (value.stockStatus as Product["stockStatus"]) ?? "in-stock",
+    backorders: (value.backorders as Product["backorders"]) ?? "not-allowed",
+    weight: value.weight === undefined ? undefined : Number(value.weight),
+    dimensions: (value.dimensions as Product["dimensions"]) ?? {},
+    shippingClass: String(value.shippingClass ?? ""),
+    attributes: Array.isArray(value.attributes) ? value.attributes as Product["attributes"] : [],
+    variations: Array.isArray(value.variations) ? value.variations as Product["variations"] : [],
+    metaTitle: String(value.metaTitle ?? ""),
+    metaDescription: String(value.metaDescription ?? ""),
+    categories: Array.isArray(value.categories) ? value.categories.filter((item): item is string => typeof item === "string") : [],
+    tags: Array.isArray(value.tags) ? value.tags.filter((item): item is string => typeof item === "string") : [],
+    status: (value.status as Product["status"]) ?? (value.isPublished === false ? "draft" : "published"),
+    visibility: (value.visibility as Product["visibility"]) ?? "shop-and-search",
+    category: String(value.category ?? "Uncategorized"),
+    brandId: typeof value.brandId === "string" ? value.brandId : undefined,
+    brandName: typeof value.brandName === "string" ? value.brandName : undefined,
+    collectionIds: Array.isArray(value.collectionIds) ? value.collectionIds.filter((item): item is string => typeof item === "string") : [],
+    inventoryCount: Number(value.inventoryCount ?? 0),
+    imageUrls: Array.isArray(value.imageUrls) ? value.imageUrls.filter((url): url is string => typeof url === "string") : [],
+    isPublished: value.isPublished !== false,
+>>>>>>> 736422f (Build functional admin product manager)
     featured: value.featured === true,
     createdAt: (value.createdAt as Product["createdAt"]) ?? null,
     updatedAt: (value.updatedAt as Product["updatedAt"]) ?? null,
@@ -183,8 +214,11 @@ function mapProduct(id: string, value: Record<string, unknown>): Product {
 }
 
 export function subscribeProducts(callback: (products: Product[]) => void, publishedOnly = true): Unsubscribe {
-  const source = publishedOnly ? query(products, where("isPublished", "==", true), orderBy("createdAt", "desc")) : query(products, orderBy("createdAt", "desc"));
-  return onSnapshot(source, (snapshot) => callback(snapshot.docs.map((item) => mapProduct(item.id, item.data()))));
+  const source = query(products, orderBy("createdAt", "desc"));
+  return onSnapshot(source, (snapshot) => {
+    const items = snapshot.docs.map((item) => mapProduct(item.id, item.data()));
+    callback(publishedOnly ? items.filter((product) => product.isPublished) : items);
+  });
 }
 
 export function subscribeProduct(slug: string, callback: (product: Product | null) => void): Unsubscribe {

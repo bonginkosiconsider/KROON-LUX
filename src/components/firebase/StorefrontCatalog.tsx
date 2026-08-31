@@ -7,6 +7,7 @@ import { useProducts } from "@/hooks/use-products";
 import { firebaseProductCard } from "@/lib/firebase-product-adapter";
 import type { Product } from "@/lib/firebase-models";
 
+<<<<<<< HEAD
 function productMatchesSearch(product: Product, value: string) {
   const term = value.trim().toLowerCase();
   if (!term) return true;
@@ -19,6 +20,10 @@ function productMatchesSearch(product: Product, value: string) {
     ...(product.categories ?? []),
     ...(product.variations ?? []).flatMap((variation) => [variation.name, variation.sku, ...Object.values(variation.attributes ?? {})]),
   ].filter(Boolean).some((item) => String(item).toLowerCase().includes(term));
+=======
+function cardProduct(product: Product) {
+  return { name: product.title, slug: product.slug, shortDescription: product.description, brand: product.brandName, images: product.imageUrls.map((url) => ({ url, altText: product.title })), category: { name: product.category, slug: product.category }, variants: [{ id: product.id, priceInCents: Math.round(product.price * 100), salePriceCents: product.salePrice ? Math.round(product.salePrice * 100) : undefined, stockQuantity: product.inventoryCount, reservedStock: 0 }] };
+>>>>>>> 736422f (Build functional admin product manager)
 }
 
 type HomeCatalogSort = "featured" | "newest" | "best-selling";

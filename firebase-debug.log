@@ -700,3 +700,80 @@ Unexpected error when fetching default storage bucket.
 [info] +  Deploy complete! 
 [info] 
 [info] Project Console: https://console.firebase.google.com/project/jozi-plug/overview
+[debug] [2026-08-31T14:15:59.552Z] ----------------------------------------------------------------------
+[debug] [2026-08-31T14:15:59.575Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\legacy\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules
+[debug] [2026-08-31T14:15:59.576Z] CLI Version:   15.28.2
+[debug] [2026-08-31T14:15:59.576Z] Platform:      win32
+[debug] [2026-08-31T14:15:59.577Z] Node Version:  v24.19.0
+[debug] [2026-08-31T14:15:59.577Z] Detected Agent: codex_cli
+[debug] [2026-08-31T14:15:59.578Z] Time:          Mon Aug 31 2026 16:15:59 GMT+0200 (South Africa Standard Time)
+[debug] [2026-08-31T14:15:59.578Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-31T14:15:59.632Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-08-31T14:16:03.728Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-31T14:16:03.728Z] > authorizing via signed-in user (kroonluxe@gmail.com)
+[debug] [2026-08-31T14:16:03.729Z] [iam] checking project jozi-plug for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-08-31T14:16:03.730Z] Checked if tokens are valid: false, expires at: 1788107663776
+[debug] [2026-08-31T14:16:03.731Z] Checked if tokens are valid: false, expires at: 1788107663776
+[debug] [2026-08-31T14:16:03.731Z] > refreshing access token with scopes: []
+[debug] [2026-08-31T14:16:03.742Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-08-31T14:16:03.742Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-31T14:16:04.259Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-08-31T14:16:04.260Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-31T14:16:04.278Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions [none]
+[debug] [2026-08-31T14:16:04.279Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions  x-goog-user-project=jozi-plug
+[debug] [2026-08-31T14:16:04.279Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-08-31T14:16:04.288Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-08-31T14:16:04.288Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-08-31T14:16:06.148Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions 200
+[debug] [2026-08-31T14:16:06.148Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/jozi-plug:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'jozi-plug'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-31T14:16:06.155Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:06.156Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:06.156Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/jozi-plug/databases/(default) [none]
+[debug] [2026-08-31T14:16:07.908Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/jozi-plug/databases/(default) 200
+[debug] [2026-08-31T14:16:07.908Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/jozi-plug/databases/(default) {"name":"projects/jozi-plug/databases/(default)","uid":"381aa1d9-32c1-4dba-b2d8-69d07c0d288e","createTime":"2025-06-13T03:21:55.951086Z","updateTime":"2025-06-13T03:21:55.951086Z","locationId":"nam5","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-31T13:16:06.798676Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"s","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","enhancedTextSearchQueryMode":"ENHANCED_QUERY_MODE_ENABLED","etag":"INPDsIuHy5YDMP3Q27az5pID"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-08-31T14:16:07.910Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:07.910Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:07.910Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [none]
+[debug] [2026-08-31T14:16:07.910Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test [omitted]
+[debug] [2026-08-31T14:16:09.232Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test 200
+[debug] [2026-08-31T14:16:09.232Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug:test {}
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-08-31T14:16:09.234Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:09.235Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:09.240Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases pageSize=10&pageToken=
+[debug] [2026-08-31T14:16:10.098Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases 200
+[debug] [2026-08-31T14:16:10.098Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases {"releases":[{"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745","createTime":"2025-06-13T03:22:01.529475Z","updateTime":"2026-08-30T15:34:32.707485Z"},{"name":"projects/jozi-plug/releases/firebase.storage/jozi-plug.firebasestorage.app","rulesetName":"projects/jozi-plug/rulesets/a4a5b82d-1400-4388-bbc3-0c9c97db985a","createTime":"2026-08-30T14:07:15.733417Z","updateTime":"2026-08-30T14:16:58.444244Z"}]}
+[debug] [2026-08-31T14:16:10.157Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:10.157Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:10.157Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745 [none]
+[debug] [2026-08-31T14:16:10.996Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745 200
+[debug] [2026-08-31T14:16:10.997Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets/770410b5-6dd0-402b-b6fe-71fbeeebc745 [omitted]
+[info] i  firestore: uploading rules firestore.rules... 
+[debug] [2026-08-31T14:16:10.998Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:10.999Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:10.999Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [none]
+[debug] [2026-08-31T14:16:10.999Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets [omitted]
+[debug] [2026-08-31T14:16:12.071Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets 200
+[debug] [2026-08-31T14:16:12.072Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/jozi-plug/rulesets {"name":"projects/jozi-plug/rulesets/546f19bb-5e8b-4bea-a67e-2f81ebe8c0d3","source":{"files":[{"content":"rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function signedIn() { return request.auth != null; }\n    function isBootstrapAdmin() {\n      return signedIn() && (\n        request.auth.token.email == 'kroonluxe@gmail.com' ||\n        request.auth.token.email == 'bonginkosiconsider@gmail.com'\n      );\n    }\n    function isAdmin() {\n      return isBootstrapAdmin() ||\n        (signedIn() &&\n          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&\n          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');\n    }\n\n    match /users/{userId} {\n      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());\n      allow create: if isAdmin() || (signedIn() && request.auth.uid == userId && request.resource.data.role == 'customer');\n      allow update: if isAdmin() || (request.auth.uid == userId && request.resource.data.role == resource.data.role);\n      allow delete: if isAdmin();\n    }\n\n    match /products/{productId} {\n      allow read: if resource.data.isPublished == true || isAdmin();\n      allow create, update, delete: if isAdmin();\n    }\n\n    match /orders/{orderId} {\n      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;\n      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);\n      allow update: if isAdmin();\n      allow delete: if false;\n    }\n\n    match /referrals/{referralId} { allow read, write: if isAdmin(); }\n    match /settings/{settingId} { allow read: if true; allow write: if isAdmin(); }\n    match /shippingZones/{zoneId} { allow read, write: if isAdmin(); }\n    match /taxRates/{rateId} { allow read, write: if isAdmin(); }\n    match /returns/{returnId} { allow read, write: if isAdmin(); }\n    match /payouts/{payoutId} { allow read, write: if isAdmin(); }\n    match /categories/{categoryId} { allow read: if true; allow write: if isAdmin(); }\n    match /brands/{brandId} { allow read: if true; allow write: if isAdmin(); }\n    match /collections/{collectionId} { allow read: if true; allow write: if isAdmin(); }\n  }\n}\n","name":"firestore.rules"}]},"createTime":"2026-08-31T14:16:10.903631Z","metadata":{"services":["cloud.firestore"]}}
+[debug] [2026-08-31T14:16:12.072Z] [rules] created ruleset projects/jozi-plug/rulesets/546f19bb-5e8b-4bea-a67e-2f81ebe8c0d3
+[debug] [2026-08-31T14:16:12.073Z] [rules] releasing cloud.firestore with ruleset projects/jozi-plug/rulesets/546f19bb-5e8b-4bea-a67e-2f81ebe8c0d3
+[debug] [2026-08-31T14:16:12.074Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:12.074Z] Checked if tokens are valid: true, expires at: 1788189363260
+[debug] [2026-08-31T14:16:12.075Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore [none]
+[debug] [2026-08-31T14:16:12.075Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore {"release":{"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/546f19bb-5e8b-4bea-a67e-2f81ebe8c0d3"}}
+[debug] [2026-08-31T14:16:13.169Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore 200
+[debug] [2026-08-31T14:16:13.169Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/jozi-plug/releases/cloud.firestore {"name":"projects/jozi-plug/releases/cloud.firestore","rulesetName":"projects/jozi-plug/rulesets/546f19bb-5e8b-4bea-a67e-2f81ebe8c0d3","createTime":"2025-06-13T03:22:01.529475Z","updateTime":"2026-08-31T14:16:12.023540Z"}
+[debug] [2026-08-31T14:16:13.170Z] [rules] updated release projects/jozi-plug/releases/cloud.firestore
+[info] +  firestore: released rules firestore.rules to cloud.firestore 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/jozi-plug/overview

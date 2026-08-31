@@ -5,12 +5,14 @@ import { useState } from "react";
 import { CatalogSearch } from "@/components/site/CatalogSearch";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { useFirebaseCart } from "@/hooks/use-firebase-cart";
+import { useStoreTaxonomies } from "@/hooks/use-store-taxonomies";
 
 export function HeaderActions() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useFirebaseAuth();
   const signedIn = Boolean(user);
   const { itemCount } = useFirebaseCart();
+  const { items: brands } = useStoreTaxonomies("brands");
 
   return (
     <>
@@ -27,10 +29,12 @@ export function HeaderActions() {
         </button>
       </div>
       {menuOpen ? <nav className="mobile-navigation" id="mobile-navigation" aria-label="Mobile navigation">
-        <Link href="/shop" onClick={() => setMenuOpen(false)}>Shop</Link>
-        <Link href="/shop?sort=newest" onClick={() => setMenuOpen(false)}>New arrivals</Link>
-        <Link href="/shop?sort=best-selling" onClick={() => setMenuOpen(false)}>Best sellers</Link>
-        <Link href="/#story" onClick={() => setMenuOpen(false)}>House</Link>
+        <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
+        <Link href="/collections/new-arrivals" onClick={() => setMenuOpen(false)}>New arrivals</Link>
+        <details className="mobile-brands"><summary>Brands</summary>{brands.map((brand) => <Link href={`/collections/${brand.slug}`} key={brand.id} onClick={() => setMenuOpen(false)}>{brand.name}</Link>)}</details>
+        <Link href="/collections/accessories" onClick={() => setMenuOpen(false)}>Accessories</Link>
+        <Link href="/collections/sale" onClick={() => setMenuOpen(false)}>Sale</Link>
+        <Link href="/collections/soccer-jerseys" onClick={() => setMenuOpen(false)}>Soccer jerseys</Link>
       </nav> : null}
     </>
   );
