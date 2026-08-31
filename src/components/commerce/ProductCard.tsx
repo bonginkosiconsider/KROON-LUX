@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
+import { effectiveVariantPriceInCents, variantAvailableQuantity } from "@/lib/firebase-product-adapter";
 
 type ProductCardProps = {
   product: {
@@ -17,9 +18,13 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
-  const variant = product.variants[0];
-  const price = variant?.salePriceCents ?? variant?.priceInCents ?? 0;
-  const available = variant ? (variant.stockQuantity ?? 0) - (variant.reservedStock ?? 0) > 0 : false;
+  const variants = product.variants;
+  const variant = variants.find((item) => variantAvailableQuantity({ stockQuantity: item.stockQuantity ?? 0, reservedStock: item.reservedStock ?? 0 }) > 0) ?? variants[0];
+  const prices = variants.map((item) => effectiveVariantPriceInCents({ priceInCents: item.priceInCents, salePriceCents: item.salePriceCents ?? null })).filter(Number.isFinite);
+  const minPrice = prices.length ? Math.min(...prices) : 0;
+  const maxPrice = prices.length ? Math.max(...prices) : minPrice;
+  const priceLabel = minPrice === maxPrice ? formatMoney(minPrice) : `${formatMoney(minPrice)} - ${formatMoney(maxPrice)}`;
+  const available = variant ? variantAvailableQuantity({ stockQuantity: variant.stockQuantity ?? 0, reservedStock: variant.reservedStock ?? 0 }) > 0 : false;
   const image = product.images[0];
 
   return (
@@ -40,11 +45,14 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.shortDescription ? <p>{product.shortDescription}</p> : null}
         </div>
         <div className="product-card-actions">
-          <span className="price">{formatMoney(price)}</span>
-          <AddToCartButton variantId={variant?.id ?? null} disabled={!available} label={available ? "Add" : "Sold out"} />
+          <span className="price">{priceLabel}</span>
+          {variants.length > 1 ? (
+            <Link className="button button-dark" href={`/products/${product.slug}`}>Options</Link>
+          ) : (
+            <AddToCartButton variantId={variant?.id ?? null} disabled={!available} label={available ? "Add" : "Sold out"} />
+          )}
         </div>
       </div>
     </article>
   );
 }
-

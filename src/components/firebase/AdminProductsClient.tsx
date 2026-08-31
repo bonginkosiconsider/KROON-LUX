@@ -1,38 +1,458 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useProducts } from "@/hooks/use-products";
+import { FormEvent, useMemo, useState } from "react";
 import { ProductMediaDropzone, type ProductMediaItem } from "@/components/firebase/ProductMediaDropzone";
-import type { Product, ProductInput } from "@/lib/firebase-models";
+import { useAdminCategories } from "@/hooks/use-admin-categories";
+import { useProducts } from "@/hooks/use-products";
+import {
+  slugify,
+  type BackorderPolicy,
+  type Product,
+  type ProductAttribute,
+  type ProductInput,
+  type ProductStatus,
+  type ProductStockStatus,
+  type ProductType,
+  type ProductVariation,
+  type ProductVisibility,
+} from "@/lib/firebase-models";
 import { createProduct, removeProduct, updateProduct } from "@/services/firebase-products";
 import { uploadProductImage } from "@/services/firebase-storage";
-import { useAdminCategories } from "@/hooks/use-admin-categories";
 
 const tabs = ["General", "Inventory", "Shipping", "Attributes", "Variations", "SEO"] as const;
 type Tab = typeof tabs[number];
-const empty = { id: "", title: "", slug: "", description: "", shortDescription: "", price: 0, inventoryCount: 0, category: "", imageUrls: [], isPublished: false, featured: false, createdAt: null, updatedAt: null } as Product;
+
+type FormDimensions = { length: string; width: string; height: string };
+type FormAttribute = ProductAttribute;
+type FormVariation = {
+  id: string;
+  name: string;
+  sku: string;
+  price: string;
+  salePrice: string;
+  manageStock: boolean;
+  inventoryCount: string;
+  lowStockThreshold: string;
+  stockStatus: ProductStockStatus;
+  imageUrl: string;
+  weight: string;
+  dimensions: FormDimensions;
+  attributes: Record<string, string>;
+};
+
+type ProductFormState = {
+  title: string;
+  slug: string;
+  productType: ProductType;
+  price: string;
+  salePrice: string;
+  description: string;
+  shortDescription: string;
+  sku: string;
+  manageStock: boolean;
+  stockStatus: ProductStockStatus;
+  inventoryCount: string;
+  lowStockThreshold: string;
+  backorders: BackorderPolicy;
+  weight: string;
+  dimensions: FormDimensions;
+  shippingClass: string;
+  attributes: FormAttribute[];
+  variations: FormVariation[];
+  metaTitle: string;
+  metaDescription: string;
+  categories: string[];
+  tags: string;
+  status: ProductStatus;
+  visibility: ProductVisibility;
+  featured: boolean;
+};
+
+const productTypeOptions: { value: ProductType; label: string }[] = [
+  { value: "simple", label: "Simple" },
+  { value: "variable", label: "Variable" },
+  { value: "grouped", label: "Grouped" },
+  { value: "external", label: "External / Affiliate" },
+  { value: "downloadable", label: "Downloadable" },
+  { value: "virtual", label: "Virtual" },
+];
+
+const stockStatusOptions: { value: ProductStockStatus; label: string }[] = [
+  { value: "in-stock", label: "In stock" },
+  { value: "out-of-stock", label: "Out of stock" },
+  { value: "on-backorder", label: "On backorder" },
+];
+
+const backorderOptions: { value: BackorderPolicy; label: string }[] = [
+  { value: "not-allowed", label: "Do not allow" },
+  { value: "allowed-with-notice", label: "Allow but notify" },
+  { value: "allowed", label: "Allow" },
+];
+
+const statusOptions: { value: ProductStatus; label: string }[] = [
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+  { value: "pending-review", label: "Pending review" },
+  { value: "private", label: "Private" },
+];
+
+const visibilityOptions: { value: ProductVisibility; label: string }[] = [
+  { value: "shop-and-search", label: "Shop and search" },
+  { value: "shop-only", label: "Shop only" },
+  { value: "search-only", label: "Search only" },
+  { value: "hidden", label: "Hidden" },
+];
+
+const blankDimensions: FormDimensions = { length: "", width: "", height: "" };
+
+const emptyForm: ProductFormState = {
+  title: "",
+  slug: "",
+  productType: "simple",
+  price: "",
+  salePrice: "",
+  description: "",
+  shortDescription: "",
+  sku: "",
+  manageStock: false,
+  stockStatus: "in-stock",
+  inventoryCount: "0",
+  lowStockThreshold: "5",
+  backorders: "not-allowed",
+  weight: "",
+  dimensions: blankDimensions,
+  shippingClass: "",
+  attributes: [],
+  variations: [],
+  metaTitle: "",
+  metaDescription: "",
+  categories: [],
+  tags: "",
+  status: "draft",
+  visibility: "shop-and-search",
+  featured: false,
+};
+
+function text(value?: string | null) {
+  return value ?? "";
+}
+
+function numberText(value?: number) {
+  return value === undefined || value === null ? "" : String(value);
+}
+
+function numberOrZero(value: string) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
+}
+
+function numberOrUndefined(value: string) {
+  if (!value.trim()) return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : undefined;
+}
+
+function cleanDimensions(dimensions: FormDimensions) {
+  return {
+    length: numberOrUndefined(dimensions.length),
+    width: numberOrUndefined(dimensions.width),
+    height: numberOrUndefined(dimensions.height),
+  };
+}
+
+function splitValues(values: string) {
+  return [...new Set(values.split(",").map((value) => value.trim()).filter(Boolean))];
+}
+
+function cleanAttributes(attributes: FormAttribute[]) {
+  return attributes.flatMap((attribute) => {
+    const name = attribute.name.trim();
+    const values = splitValues(attribute.values).join(", ");
+    if (!name || !values) return [];
+    return [{ name, values, usedForVariations: attribute.usedForVariations === true }];
+  });
+}
+
+function variationName(attributes: Record<string, string>) {
+  return Object.entries(attributes).map(([name, value]) => `${name}: ${value}`).join(" / ");
+}
+
+function variationSignature(attributes: Record<string, string>) {
+  return Object.entries(attributes)
+    .map(([name, value]) => `${name.toLowerCase()}=${value.toLowerCase()}`)
+    .sort()
+    .join("|");
+}
+
+function variationMatrix(attributes: FormAttribute[]) {
+  const usable = cleanAttributes(attributes)
+    .filter((attribute) => attribute.usedForVariations)
+    .map((attribute) => ({ name: attribute.name, values: splitValues(attribute.values) }))
+    .filter((attribute) => attribute.values.length > 0);
+
+  if (!usable.length) return [];
+
+  return usable.reduce<Record<string, string>[]>(
+    (combinations, attribute) => combinations.flatMap((combination) => attribute.values.map((value) => ({ ...combination, [attribute.name]: value }))),
+    [{}],
+  );
+}
+
+function newVariationId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function variationFromProduct(variation: ProductVariation): FormVariation {
+  return {
+    id: variation.id,
+    name: variation.name,
+    sku: text(variation.sku),
+    price: numberText(variation.price),
+    salePrice: numberText(variation.salePrice),
+    manageStock: variation.manageStock !== false,
+    inventoryCount: numberText(variation.inventoryCount),
+    lowStockThreshold: numberText(variation.lowStockThreshold ?? 5),
+    stockStatus: variation.stockStatus ?? "in-stock",
+    imageUrl: text(variation.imageUrl),
+    weight: numberText(variation.weight),
+    dimensions: {
+      length: numberText(variation.dimensions?.length),
+      width: numberText(variation.dimensions?.width),
+      height: numberText(variation.dimensions?.height),
+    },
+    attributes: variation.attributes ?? {},
+  };
+}
+
+function formFromProduct(product: Product | null): ProductFormState {
+  if (!product) return { ...emptyForm, dimensions: { ...blankDimensions }, attributes: [], variations: [], categories: [] };
+
+  return {
+    title: product.title,
+    slug: product.slug,
+    productType: product.productType ?? "simple",
+    price: numberText(product.price),
+    salePrice: numberText(product.salePrice),
+    description: product.description,
+    shortDescription: text(product.shortDescription),
+    sku: text(product.sku),
+    manageStock: product.manageStock === true,
+    stockStatus: product.stockStatus ?? "in-stock",
+    inventoryCount: numberText(product.inventoryCount),
+    lowStockThreshold: numberText(product.lowStockThreshold ?? 5),
+    backorders: product.backorders ?? "not-allowed",
+    weight: numberText(product.weight),
+    dimensions: {
+      length: numberText(product.dimensions?.length),
+      width: numberText(product.dimensions?.width),
+      height: numberText(product.dimensions?.height),
+    },
+    shippingClass: text(product.shippingClass),
+    attributes: (product.attributes ?? []).map((attribute) => ({ ...attribute })),
+    variations: (product.variations ?? []).map(variationFromProduct),
+    metaTitle: text(product.metaTitle),
+    metaDescription: text(product.metaDescription),
+    categories: product.categories?.length ? [...product.categories] : product.category ? [product.category] : [],
+    tags: product.tags?.join(", ") ?? "",
+    status: product.status ?? (product.isPublished ? "published" : "draft"),
+    visibility: product.visibility ?? "shop-and-search",
+    featured: product.featured,
+  };
+}
+
+function variationPayload(variation: FormVariation, parentPrice: string): ProductVariation {
+  const attributes = Object.fromEntries(
+    Object.entries(variation.attributes)
+      .map(([key, value]) => [key.trim(), value.trim()])
+      .filter(([key, value]) => key && value),
+  );
+
+  return {
+    id: variation.id,
+    name: variation.name.trim() || variationName(attributes) || "Variation",
+    sku: variation.sku.trim(),
+    price: numberOrZero(variation.price || parentPrice),
+    salePrice: numberOrUndefined(variation.salePrice),
+    manageStock: variation.manageStock,
+    inventoryCount: numberOrZero(variation.inventoryCount),
+    lowStockThreshold: numberOrZero(variation.lowStockThreshold || "5"),
+    stockStatus: variation.stockStatus,
+    imageUrl: variation.imageUrl.trim() || undefined,
+    weight: numberOrUndefined(variation.weight),
+    dimensions: cleanDimensions(variation.dimensions),
+    attributes,
+  };
+}
+
+function money(value: number) {
+  return `R ${value.toFixed(2)}`;
+}
+
+function productPriceLabel(product: Product) {
+  const prices = product.productType === "variable" && product.variations?.length
+    ? product.variations.map((variation) => variation.salePrice ?? variation.price).filter((value) => Number.isFinite(value))
+    : [product.salePrice ?? product.price];
+
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return min === max ? money(min) : `${money(min)} - ${money(max)}`;
+}
+
+function productStockLabel(product: Product) {
+  if (product.productType === "variable" && product.variations?.length) {
+    const quantity = product.variations.reduce((total, variation) => total + (variation.manageStock === false ? 0 : variation.inventoryCount), 0);
+    return `${quantity} across ${product.variations.length}`;
+  }
+  if (!product.manageStock) return product.stockStatus === "out-of-stock" ? "Out of stock" : "Not tracked";
+  return `${product.inventoryCount} in stock`;
+}
+
+function friendlySaveError(error: unknown) {
+  if (error instanceof Error) {
+    if (error.message === "SKU_ALREADY_EXISTS") return "A product or variation already uses that SKU.";
+    if (error.message === "SLUG_ALREADY_EXISTS") return "Another product already uses that slug.";
+    if (error.message === "PRODUCT_NOT_FOUND") return "This product no longer exists.";
+    return error.message;
+  }
+  return "Please try again.";
+}
 
 export function AdminProductsClient() {
   const { products, loading } = useProducts(false);
   const categoryOptions = useAdminCategories();
   const [editing, setEditing] = useState<Product | null>(null);
+  const [form, setForm] = useState<ProductFormState>(() => formFromProduct(null));
+  const [slugTouched, setSlugTouched] = useState(false);
   const [tab, setTab] = useState<Tab>("General");
   const [media, setMedia] = useState<ProductMediaItem[]>([]);
-  const [attributes, setAttributes] = useState<{ name: string; values: string }[]>([]);
-  const [variations, setVariations] = useState<{ name: string; price: number; inventoryCount: number }[]>([]);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  const product = editing ?? empty;
-  const startEdit = (next: Product | null) => {
+
+  const matrixCount = useMemo(() => variationMatrix(form.attributes).length, [form.attributes]);
+  const seoTitle = form.metaTitle.trim() || form.title.trim() || "Product title";
+  const seoDescription = form.metaDescription.trim() || form.shortDescription.trim() || form.description.trim().slice(0, 160);
+
+  function startEdit(next: Product | null) {
     setMedia((current) => {
-      current.forEach((item) => { if (item.file) URL.revokeObjectURL(item.url); });
+      current.forEach((item) => {
+        if (item.file) URL.revokeObjectURL(item.url);
+      });
       return (next?.imageUrls ?? []).map((url, index) => ({ id: `saved-${index}-${url}`, url }));
     });
-    setEditing(next); setTab("General"); setAttributes(next?.attributes ?? []); setVariations(next?.variations ?? []); setMessage("");
-  };
+    setEditing(next);
+    setForm(formFromProduct(next));
+    setSlugTouched(Boolean(next?.slug));
+    setTab("General");
+    setMessage("");
+  }
+
+  function updateTitle(title: string) {
+    setForm((current) => ({ ...current, title, slug: slugTouched ? current.slug : slugify(title) }));
+  }
+
+  function updateAttribute(index: number, patch: Partial<FormAttribute>) {
+    setForm((current) => ({
+      ...current,
+      attributes: current.attributes.map((attribute, itemIndex) => itemIndex === index ? { ...attribute, ...patch } : attribute),
+    }));
+  }
+
+  function removeAttribute(index: number) {
+    setForm((current) => ({ ...current, attributes: current.attributes.filter((_, itemIndex) => itemIndex !== index) }));
+  }
+
+  function updateVariation(index: number, patch: Partial<FormVariation>) {
+    setForm((current) => ({
+      ...current,
+      variations: current.variations.map((variation, itemIndex) => itemIndex === index ? { ...variation, ...patch } : variation),
+    }));
+  }
+
+  function updateVariationDimension(index: number, key: keyof FormDimensions, value: string) {
+    setForm((current) => ({
+      ...current,
+      variations: current.variations.map((variation, itemIndex) => itemIndex === index ? { ...variation, dimensions: { ...variation.dimensions, [key]: value } } : variation),
+    }));
+  }
+
+  function removeVariation(index: number) {
+    setForm((current) => ({ ...current, variations: current.variations.filter((_, itemIndex) => itemIndex !== index) }));
+  }
+
+  function addManualVariation() {
+    setForm((current) => ({
+      ...current,
+      productType: "variable",
+      variations: [
+        ...current.variations,
+        {
+          id: newVariationId(),
+          name: `Variation ${current.variations.length + 1}`,
+          sku: "",
+          price: current.price,
+          salePrice: current.salePrice,
+          manageStock: true,
+          inventoryCount: "0",
+          lowStockThreshold: current.lowStockThreshold || "5",
+          stockStatus: "out-of-stock",
+          imageUrl: "",
+          weight: current.weight,
+          dimensions: { ...current.dimensions },
+          attributes: {},
+        },
+      ],
+    }));
+    setTab("Variations");
+  }
+
+  function generateVariations() {
+    const combinations = variationMatrix(form.attributes);
+    if (!combinations.length) {
+      setMessage("Select at least one variation attribute with values.");
+      setTab("Attributes");
+      return;
+    }
+
+    setForm((current) => {
+      const existing = new Map(current.variations.map((variation) => [variationSignature(variation.attributes), variation]));
+      return {
+        ...current,
+        productType: "variable",
+        variations: combinations.map((attributes) => {
+          const match = existing.get(variationSignature(attributes));
+          if (match) return { ...match, attributes, name: match.name || variationName(attributes) };
+          return {
+            id: newVariationId(),
+            name: variationName(attributes),
+            sku: "",
+            price: current.price,
+            salePrice: current.salePrice,
+            manageStock: true,
+            inventoryCount: "0",
+            lowStockThreshold: current.lowStockThreshold || "5",
+            stockStatus: "out-of-stock",
+            imageUrl: "",
+            weight: current.weight,
+            dimensions: { ...current.dimensions },
+            attributes,
+          };
+        }),
+      };
+    });
+    setTab("Variations");
+    setMessage(`Generated ${combinations.length} variations.`);
+  }
+
+  function toggleCategory(name: string, checked: boolean) {
+    setForm((current) => ({
+      ...current,
+      categories: checked ? [...new Set([...current.categories, name])] : current.categories.filter((item) => item !== name),
+    }));
+  }
 
   function addMedia(files: File[]) {
-    setMedia((current) => [...current, ...files.map((file) => ({ id: `upload-${crypto.randomUUID()}`, file, url: URL.createObjectURL(file) }))]);
+    setMedia((current) => [...current, ...files.map((file) => ({ id: `upload-${newVariationId()}`, file, url: URL.createObjectURL(file) }))]);
   }
 
   function removeMedia(id: string) {
@@ -55,23 +475,410 @@ export function AdminProductsClient() {
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSaving(true); setMessage("Uploading product details and images…");
-    const form = new FormData(event.currentTarget);
+    event.preventDefault();
+
+    const title = form.title.trim();
+    if (!title) {
+      setMessage("Product name is required.");
+      setTab("General");
+      return;
+    }
+    if (!form.price.trim()) {
+      setMessage("Regular price is required.");
+      setTab("General");
+      return;
+    }
+
+    const selectedCategories = form.categories.length ? form.categories : ["Uncategorized"];
+    const cleanedVariations = form.productType === "variable" ? form.variations.map((variation) => variationPayload(variation, form.price)) : [];
+    if (form.productType === "variable" && !cleanedVariations.length) {
+      setMessage("Variable products need at least one variation.");
+      setTab("Variations");
+      return;
+    }
+
+    setSaving(true);
+    setMessage("Saving product...");
+
     try {
       const uploaded = await Promise.all(media.map((item) => item.file ? uploadProductImage(item.file) : item.url));
-      const status = String(form.get("status")) as Product["status"];
-      const selectedCategories = categoryOptions.filter((name) => form.get(`category-${name}`) === "on");
       const payload: ProductInput = {
-        title: String(form.get("title")).trim(), productType: String(form.get("productType")) as Product["productType"], price: Number(form.get("price")), salePrice: form.get("salePrice") ? Number(form.get("salePrice")) : undefined, description: String(form.get("description")), shortDescription: String(form.get("shortDescription")), sku: String(form.get("sku")), stockStatus: String(form.get("stockStatus")) as Product["stockStatus"], inventoryCount: Number(form.get("inventoryCount")), backorders: String(form.get("backorders")) as Product["backorders"], weight: Number(form.get("weight")) || undefined, dimensions: { length: Number(form.get("length")) || undefined, width: Number(form.get("width")) || undefined, height: Number(form.get("height")) || undefined }, shippingClass: String(form.get("shippingClass")), attributes, variations, slug: String(form.get("slug")), metaTitle: String(form.get("metaTitle")), metaDescription: String(form.get("metaDescription")), categories: selectedCategories, category: selectedCategories[0] ?? "Uncategorized", tags: String(form.get("tags") ?? "").split(",").map((tag) => tag.trim()).filter(Boolean), imageUrls: uploaded, status, visibility: String(form.get("visibility")) as Product["visibility"], isPublished: status === "published", featured: form.get("featured") === "on",
+        title,
+        slug: form.slug.trim() || slugify(title),
+        productType: form.productType,
+        price: numberOrZero(form.price),
+        salePrice: numberOrUndefined(form.salePrice),
+        description: form.description,
+        shortDescription: form.shortDescription,
+        sku: form.sku.trim(),
+        manageStock: form.manageStock,
+        stockStatus: form.stockStatus,
+        inventoryCount: numberOrZero(form.inventoryCount),
+        lowStockThreshold: numberOrZero(form.lowStockThreshold || "5"),
+        backorders: form.backorders,
+        weight: numberOrUndefined(form.weight),
+        dimensions: cleanDimensions(form.dimensions),
+        shippingClass: form.shippingClass,
+        attributes: cleanAttributes(form.attributes),
+        variations: cleanedVariations,
+        metaTitle: form.metaTitle,
+        metaDescription: form.metaDescription,
+        categories: selectedCategories,
+        category: selectedCategories[0],
+        tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+        imageUrls: uploaded,
+        status: form.status,
+        visibility: form.visibility,
+        isPublished: form.status === "published",
+        featured: form.featured,
       };
+
       const wasEditing = Boolean(editing);
-      if (editing) await updateProduct(editing.id, payload); else await createProduct(payload);
-      const confirmation = status === "published"
-        ? wasEditing ? "Product updated and published." : "Product published successfully."
-        : wasEditing ? "Product updated successfully." : "Product saved as a draft.";
-      startEdit(null); setMessage(confirmation);
-    } catch (error) { setMessage(`Could not save product. ${error instanceof Error ? error.message : "Please try again."}`); } finally { setSaving(false); }
+      if (editing) await updateProduct(editing.id, payload);
+      else await createProduct(payload);
+
+      startEdit(null);
+      setMessage(wasEditing ? "Product updated successfully." : "Product created successfully.");
+    } catch (error) {
+      setMessage(`Could not save product. ${friendlySaveError(error)}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  return <div className="product-manager"><div className="product-manager-heading"><div><h2>{editing ? `Edit: ${product.title}` : "Add new product"}</h2><p>Build a complete listing, add product media, then publish when ready.</p></div>{editing ? <button className="button button-secondary" onClick={() => startEdit(null)}>Add new</button> : null}</div><form className="product-editor" key={editing?.id ?? "new"} onSubmit={save}><div className="product-editor-main"><nav className="product-tabs">{tabs.map((item) => <button type="button" className={tab === item ? "active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</nav><section className="admin-panel editor-panel">{tab === "General" && <><label>Product name<input name="title" defaultValue={product.title} required /></label><div className="form-grid"><label>Product type<select name="productType" defaultValue={product.productType ?? "simple"}>{["simple", "variable", "grouped", "external", "downloadable", "virtual"].map((type) => <option key={type} value={type}>{type === "external" ? "External / Affiliate" : type[0].toUpperCase() + type.slice(1)}</option>)}</select></label><label>Regular price (R)<input name="price" type="number" min="0" step="0.01" defaultValue={product.price} required /></label><label>Sale price (R)<input name="salePrice" type="number" min="0" step="0.01" defaultValue={product.salePrice} /></label></div><label>Full description<textarea name="description" rows={9} defaultValue={product.description} /></label><label>Short description<textarea name="shortDescription" rows={3} defaultValue={product.shortDescription} /></label></>}{tab === "Inventory" && <div className="form-grid"><label>SKU<input name="sku" defaultValue={product.sku} /></label><label>Stock status<select name="stockStatus" defaultValue={product.stockStatus ?? "in-stock"}><option value="in-stock">In stock</option><option value="out-of-stock">Out of stock</option></select></label><label>Stock quantity<input name="inventoryCount" type="number" min="0" defaultValue={product.inventoryCount} /></label><label>Backorders<select name="backorders" defaultValue={product.backorders ?? "not-allowed"}><option value="not-allowed">Do not allow</option><option value="allowed">Allow</option><option value="allowed-with-notice">Allow with notice</option></select></label></div>}{tab === "Shipping" && <div className="form-grid"><label>Weight (kg)<input name="weight" type="number" min="0" step="0.01" defaultValue={product.weight} /></label><label>Shipping class<select name="shippingClass" defaultValue={product.shippingClass}><option value="">No shipping class</option><option>Standard</option><option>Oversized</option></select></label><label>Length (cm)<input name="length" type="number" min="0" defaultValue={product.dimensions?.length} /></label><label>Width (cm)<input name="width" type="number" min="0" defaultValue={product.dimensions?.width} /></label><label>Height (cm)<input name="height" type="number" min="0" defaultValue={product.dimensions?.height} /></label></div>}{tab === "Attributes" && <div className="attribute-editor"><p>Define values such as colour, size, or material.</p>{attributes.map((attribute, index) => <div className="attribute-row" key={index}><input value={attribute.name} onChange={(event) => setAttributes((all) => all.map((item, i) => i === index ? { ...item, name: event.target.value } : item))} placeholder="Attribute name" /><input value={attribute.values} onChange={(event) => setAttributes((all) => all.map((item, i) => i === index ? { ...item, values: event.target.value } : item))} placeholder="Values, separated by commas" /><button type="button" className="text-button danger" onClick={() => setAttributes((all) => all.filter((_, i) => i !== index))}>Remove</button></div>)}<button type="button" className="button button-secondary" onClick={() => setAttributes((all) => [...all, { name: "", values: "" }])}>Add attribute</button></div>}{tab === "Variations" && <div className="attribute-editor"><button type="button" className="button button-secondary" onClick={() => setVariations(attributes.flatMap((attribute) => attribute.values.split(",").filter(Boolean).map((value) => ({ name: `${attribute.name}: ${value.trim()}`, price: product.price, inventoryCount: 0 }))))}>Generate variations</button>{variations.map((variation, index) => <div className="variation-row" key={index}><strong>{variation.name}</strong><input type="number" value={variation.price} onChange={(event) => setVariations((all) => all.map((item, i) => i === index ? { ...item, price: Number(event.target.value) } : item))} /><input type="number" value={variation.inventoryCount} onChange={(event) => setVariations((all) => all.map((item, i) => i === index ? { ...item, inventoryCount: Number(event.target.value) } : item))} /></div>)}</div>}{tab === "SEO" && <div className="form-grid"><label>Slug<input name="slug" defaultValue={product.slug} /></label><label>Meta title<input name="metaTitle" defaultValue={product.metaTitle} /></label><label className="wide-field">Meta description<textarea name="metaDescription" rows={4} defaultValue={product.metaDescription} /></label></div>}</section></div><aside className="product-editor-aside"><section className="admin-panel editor-panel"><h3>Publish</h3><label>Status<select name="status" defaultValue={product.status ?? (product.isPublished ? "published" : "draft")}><option value="draft">Draft</option><option value="published">Published</option><option value="pending-review">Pending review</option><option value="private">Private</option></select></label><label>Visibility<select name="visibility" defaultValue={product.visibility ?? "shop-and-search"}><option value="shop-and-search">Shop and search</option><option value="shop-only">Shop only</option><option value="search-only">Search only</option><option value="hidden">Hidden</option></select></label><label className="admin-checks"><input name="featured" type="checkbox" defaultChecked={product.featured} /> Featured product</label><button className="button button-primary" disabled={saving}>{saving ? "Saving…" : "Save product"}</button></section><section className="admin-panel editor-panel"><h3>Categories & tags</h3><div className="taxonomy-checklist">{categoryOptions.map((name) => <label key={name}><input name={`category-${name}`} type="checkbox" defaultChecked={product.categories?.includes(name) || product.category === name} />{name}</label>)}</div><label>Tags<input name="tags" defaultValue={product.tags?.join(", ")} placeholder="Comma-separated" /></label></section><section className="admin-panel editor-panel"><h3>Product media</h3><ProductMediaDropzone media={media} onAddFiles={addMedia} onRemove={removeMedia} onReorder={reorderMedia} /></section></aside></form>{message ? <p className="form-message">{message}</p> : null}<section className="admin-panel product-list-panel"><div className="section-heading tight"><div><p className="eyebrow">Catalogue</p><h2>All products</h2></div><span>{loading ? "Loading…" : `${products.length} products`}</span></div><div className="admin-table"><div className="admin-table-row admin-table-head"><span>Product</span><span>SKU</span><span>Price</span><span>Stock</span><span>Status</span><span>Actions</span></div>{products.map((item) => <div className="admin-table-row" key={item.id}><span><strong>{item.title}</strong><small>{item.categories?.join(", ") || item.category}</small></span><span>{item.sku || "—"}</span><span>R {item.price.toFixed(2)}</span><span>{item.inventoryCount}</span><span>{item.status ?? (item.isPublished ? "published" : "draft")}</span><span className="admin-actions"><button type="button" className="text-button" onClick={() => startEdit(item)}>Edit</button><button type="button" className="text-button danger" onClick={() => { if (confirm(`Delete ${item.title}?`)) removeProduct(item.id).catch(() => setMessage("Product could not be deleted.")); }}>Delete</button></span></div>)}</div></section></div>;
+  return (
+    <div className="product-manager">
+      <div className="product-manager-heading">
+        <div>
+          <h2>{editing ? `Edit: ${editing.title}` : "Add new product"}</h2>
+          <p>Build catalog records with inventory, media, attributes, variations, and SEO.</p>
+        </div>
+        {editing ? <button className="button button-secondary" onClick={() => startEdit(null)} type="button">Add new</button> : null}
+      </div>
+
+      <form className="product-editor" onSubmit={save}>
+        <div className="product-editor-main">
+          <nav className="product-tabs" aria-label="Product editor sections">
+            {tabs.map((item) => (
+              <button type="button" className={tab === item ? "active" : ""} onClick={() => setTab(item)} key={item}>
+                {item}
+              </button>
+            ))}
+          </nav>
+
+          <section className="admin-panel editor-panel">
+            {tab === "General" ? (
+              <>
+                <label>
+                  Product name
+                  <input value={form.title} onChange={(event) => updateTitle(event.target.value)} required />
+                </label>
+                <div className="form-grid">
+                  <label>
+                    Slug
+                    <span className="field-action-row">
+                      <input value={form.slug} onChange={(event) => { setSlugTouched(true); setForm((current) => ({ ...current, slug: slugify(event.target.value) })); }} required />
+                      <button className="button button-secondary" type="button" onClick={() => { setSlugTouched(false); setForm((current) => ({ ...current, slug: slugify(current.title) })); }}>Regenerate</button>
+                    </span>
+                  </label>
+                  <label>
+                    Product type
+                    <select value={form.productType} onChange={(event) => setForm((current) => ({ ...current, productType: event.target.value as ProductType }))}>
+                      {productTypeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Regular price (R)
+                    <input value={form.price} onChange={(event) => setForm((current) => ({ ...current, price: event.target.value }))} type="number" min="0" step="0.01" required />
+                  </label>
+                  <label>
+                    Sale price (R)
+                    <input value={form.salePrice} onChange={(event) => setForm((current) => ({ ...current, salePrice: event.target.value }))} type="number" min="0" step="0.01" />
+                  </label>
+                </div>
+                <label>
+                  Full description
+                  <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} rows={9} />
+                </label>
+                <label>
+                  Short description
+                  <textarea value={form.shortDescription} onChange={(event) => setForm((current) => ({ ...current, shortDescription: event.target.value }))} rows={3} />
+                </label>
+              </>
+            ) : null}
+
+            {tab === "Inventory" ? (
+              <>
+                <label className="toggle-line">
+                  <input type="checkbox" checked={form.manageStock} onChange={(event) => setForm((current) => ({ ...current, manageStock: event.target.checked }))} />
+                  Track inventory?
+                </label>
+                <div className="form-grid">
+                  <label>
+                    SKU
+                    <input value={form.sku} onChange={(event) => setForm((current) => ({ ...current, sku: event.target.value }))} placeholder="Auto-generated if blank" />
+                  </label>
+                  <label>
+                    Stock status
+                    <select value={form.stockStatus} onChange={(event) => setForm((current) => ({ ...current, stockStatus: event.target.value as ProductStockStatus }))}>
+                      {stockStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Stock quantity
+                    <input value={form.inventoryCount} onChange={(event) => setForm((current) => ({ ...current, inventoryCount: event.target.value }))} type="number" min="0" disabled={!form.manageStock} />
+                  </label>
+                  <label>
+                    Low stock threshold
+                    <input value={form.lowStockThreshold} onChange={(event) => setForm((current) => ({ ...current, lowStockThreshold: event.target.value }))} type="number" min="0" disabled={!form.manageStock} />
+                  </label>
+                  <label>
+                    Backorders
+                    <select value={form.backorders} onChange={(event) => setForm((current) => ({ ...current, backorders: event.target.value as BackorderPolicy }))}>
+                      {backorderOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </select>
+                  </label>
+                </div>
+              </>
+            ) : null}
+
+            {tab === "Shipping" ? (
+              <div className="form-grid">
+                <label>
+                  Weight (kg)
+                  <input value={form.weight} onChange={(event) => setForm((current) => ({ ...current, weight: event.target.value }))} type="number" min="0" step="0.01" />
+                </label>
+                <label>
+                  Shipping class
+                  <select value={form.shippingClass} onChange={(event) => setForm((current) => ({ ...current, shippingClass: event.target.value }))}>
+                    <option value="">No shipping class</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Oversized">Oversized</option>
+                    <option value="Fragile">Fragile</option>
+                  </select>
+                </label>
+                <label>
+                  Length (cm)
+                  <input value={form.dimensions.length} onChange={(event) => setForm((current) => ({ ...current, dimensions: { ...current.dimensions, length: event.target.value } }))} type="number" min="0" />
+                </label>
+                <label>
+                  Width (cm)
+                  <input value={form.dimensions.width} onChange={(event) => setForm((current) => ({ ...current, dimensions: { ...current.dimensions, width: event.target.value } }))} type="number" min="0" />
+                </label>
+                <label>
+                  Height (cm)
+                  <input value={form.dimensions.height} onChange={(event) => setForm((current) => ({ ...current, dimensions: { ...current.dimensions, height: event.target.value } }))} type="number" min="0" />
+                </label>
+              </div>
+            ) : null}
+
+            {tab === "Attributes" ? (
+              <div className="attribute-editor">
+                <div className="editor-toolbar">
+                  <strong>{form.attributes.length} attributes</strong>
+                  <button type="button" className="button button-secondary" onClick={() => setForm((current) => ({ ...current, attributes: [...current.attributes, { name: "", values: "", usedForVariations: false }] }))}>Add attribute</button>
+                </div>
+                {form.attributes.length ? form.attributes.map((attribute, index) => (
+                  <div className="attribute-row" key={index}>
+                    <input value={attribute.name} onChange={(event) => updateAttribute(index, { name: event.target.value })} placeholder="Attribute name" aria-label="Attribute name" />
+                    <input value={attribute.values} onChange={(event) => updateAttribute(index, { values: event.target.value })} placeholder="Values, separated by commas" aria-label="Attribute values" />
+                    <label className="toggle-line compact">
+                      <input type="checkbox" checked={attribute.usedForVariations === true} onChange={(event) => updateAttribute(index, { usedForVariations: event.target.checked })} />
+                      Used for variations
+                    </label>
+                    <button type="button" className="text-button danger" onClick={() => removeAttribute(index)}>Remove</button>
+                  </div>
+                )) : <p className="empty-catalog">No attributes yet.</p>}
+              </div>
+            ) : null}
+
+            {tab === "Variations" ? (
+              <div className="variation-editor">
+                <div className="editor-toolbar">
+                  <strong>{form.variations.length} variations</strong>
+                  <span>{matrixCount ? `${matrixCount} in matrix` : "No matrix"}</span>
+                  <button type="button" className="button button-secondary" onClick={generateVariations}>Generate matrix</button>
+                  <button type="button" className="button button-secondary" onClick={addManualVariation}>Add variation</button>
+                </div>
+                {form.productType !== "variable" ? <p className="empty-catalog">Set Product type to Variable before publishing variation rows.</p> : null}
+                {form.variations.length ? form.variations.map((variation, index) => (
+                  <div className="variation-row-detailed" key={variation.id}>
+                    <div className="variation-row-heading">
+                      <strong>{variation.name || variationName(variation.attributes) || `Variation ${index + 1}`}</strong>
+                      <button type="button" className="text-button danger" onClick={() => removeVariation(index)}>Remove</button>
+                    </div>
+                    {Object.keys(variation.attributes).length ? (
+                      <div className="variation-attributes">
+                        {Object.entries(variation.attributes).map(([name, value]) => <span key={`${variation.id}-${name}`}>{name}: {value}</span>)}
+                      </div>
+                    ) : null}
+                    <div className="form-grid variation-grid">
+                      <label>
+                        Variation name
+                        <input value={variation.name} onChange={(event) => updateVariation(index, { name: event.target.value })} />
+                      </label>
+                      <label>
+                        SKU
+                        <input value={variation.sku} onChange={(event) => updateVariation(index, { sku: event.target.value })} placeholder="Auto-generated if blank" />
+                      </label>
+                      <label>
+                        Regular price (R)
+                        <input value={variation.price} onChange={(event) => updateVariation(index, { price: event.target.value })} type="number" min="0" step="0.01" />
+                      </label>
+                      <label>
+                        Sale price (R)
+                        <input value={variation.salePrice} onChange={(event) => updateVariation(index, { salePrice: event.target.value })} type="number" min="0" step="0.01" />
+                      </label>
+                      <label className="toggle-line">
+                        <input type="checkbox" checked={variation.manageStock} onChange={(event) => updateVariation(index, { manageStock: event.target.checked })} />
+                        Track variation stock?
+                      </label>
+                      <label>
+                        Stock quantity
+                        <input value={variation.inventoryCount} onChange={(event) => updateVariation(index, { inventoryCount: event.target.value })} type="number" min="0" disabled={!variation.manageStock} />
+                      </label>
+                      <label>
+                        Low stock threshold
+                        <input value={variation.lowStockThreshold} onChange={(event) => updateVariation(index, { lowStockThreshold: event.target.value })} type="number" min="0" disabled={!variation.manageStock} />
+                      </label>
+                      <label>
+                        Stock status
+                        <select value={variation.stockStatus} onChange={(event) => updateVariation(index, { stockStatus: event.target.value as ProductStockStatus })}>
+                          {stockStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                        </select>
+                      </label>
+                      <label className="wide-field">
+                        Variation image URL
+                        <input value={variation.imageUrl} onChange={(event) => updateVariation(index, { imageUrl: event.target.value })} type="url" />
+                      </label>
+                      <label>
+                        Weight (kg)
+                        <input value={variation.weight} onChange={(event) => updateVariation(index, { weight: event.target.value })} type="number" min="0" step="0.01" />
+                      </label>
+                      <label>
+                        Length (cm)
+                        <input value={variation.dimensions.length} onChange={(event) => updateVariationDimension(index, "length", event.target.value)} type="number" min="0" />
+                      </label>
+                      <label>
+                        Width (cm)
+                        <input value={variation.dimensions.width} onChange={(event) => updateVariationDimension(index, "width", event.target.value)} type="number" min="0" />
+                      </label>
+                      <label>
+                        Height (cm)
+                        <input value={variation.dimensions.height} onChange={(event) => updateVariationDimension(index, "height", event.target.value)} type="number" min="0" />
+                      </label>
+                    </div>
+                  </div>
+                )) : <p className="empty-catalog">No variations yet.</p>}
+              </div>
+            ) : null}
+
+            {tab === "SEO" ? (
+              <>
+                <div className="form-grid">
+                  <label>
+                    Meta title
+                    <input value={form.metaTitle} onChange={(event) => setForm((current) => ({ ...current, metaTitle: event.target.value }))} />
+                  </label>
+                  <label className="wide-field">
+                    Meta description
+                    <textarea value={form.metaDescription} onChange={(event) => setForm((current) => ({ ...current, metaDescription: event.target.value }))} rows={4} />
+                  </label>
+                </div>
+                <div className="seo-preview">
+                  <span>{form.slug ? `/products/${form.slug}` : "/products/product-slug"}</span>
+                  <strong>{seoTitle}</strong>
+                  <p>{seoDescription || "Search preview description"}</p>
+                </div>
+              </>
+            ) : null}
+          </section>
+        </div>
+
+        <aside className="product-editor-aside">
+          <section className="admin-panel editor-panel">
+            <h3>Publish</h3>
+            <label>
+              Status
+              <select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value as ProductStatus }))}>
+                {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label>
+              Visibility
+              <select value={form.visibility} onChange={(event) => setForm((current) => ({ ...current, visibility: event.target.value as ProductVisibility }))}>
+                {visibilityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label className="toggle-line">
+              <input type="checkbox" checked={form.featured} onChange={(event) => setForm((current) => ({ ...current, featured: event.target.checked }))} />
+              Featured product
+            </label>
+            <button className="button button-primary" type="submit" disabled={saving}>{saving ? "Saving..." : "Save product"}</button>
+          </section>
+
+          <section className="admin-panel editor-panel">
+            <h3>Categories & tags</h3>
+            <div className="taxonomy-checklist">
+              {categoryOptions.map((name) => (
+                <label key={name}>
+                  <input type="checkbox" checked={form.categories.includes(name)} onChange={(event) => toggleCategory(name, event.target.checked)} />
+                  {name}
+                </label>
+              ))}
+            </div>
+            <label>
+              Tags
+              <input value={form.tags} onChange={(event) => setForm((current) => ({ ...current, tags: event.target.value }))} placeholder="Comma-separated" />
+            </label>
+          </section>
+
+          <section className="admin-panel editor-panel">
+            <h3>Product media</h3>
+            <ProductMediaDropzone media={media} onAddFiles={addMedia} onRemove={removeMedia} onReorder={reorderMedia} />
+          </section>
+        </aside>
+      </form>
+
+      {message ? <p className="form-message">{message}</p> : null}
+
+      <section className="admin-panel product-list-panel">
+        <div className="section-heading tight">
+          <div>
+            <p className="eyebrow">Catalog</p>
+            <h2>All products</h2>
+          </div>
+          <span>{loading ? "Loading..." : `${products.length} products`}</span>
+        </div>
+        <div className="admin-table">
+          <div className="admin-table-row product-table-row admin-table-head">
+            <span>Product</span>
+            <span>Type</span>
+            <span>SKU</span>
+            <span>Price</span>
+            <span>Stock</span>
+            <span>Status</span>
+            <span>Actions</span>
+          </div>
+          {products.length ? products.map((item) => (
+            <div className="admin-table-row product-table-row" key={item.id}>
+              <span>
+                <strong>{item.title}</strong>
+                <small>{item.categories?.join(", ") || item.category}</small>
+              </span>
+              <span>{productTypeOptions.find((option) => option.value === item.productType)?.label ?? "Simple"}</span>
+              <span>{item.sku || "-"}</span>
+              <span>{productPriceLabel(item)}</span>
+              <span>{productStockLabel(item)}</span>
+              <span>{statusOptions.find((option) => option.value === item.status)?.label ?? (item.isPublished ? "Published" : "Draft")}</span>
+              <span className="admin-actions">
+                <button type="button" className="text-button" onClick={() => startEdit(item)}>Edit</button>
+                <button type="button" className="text-button danger" onClick={() => { if (confirm(`Delete ${item.title}?`)) removeProduct(item.id).catch((error) => setMessage(`Product could not be deleted. ${friendlySaveError(error)}`)); }}>Delete</button>
+              </span>
+            </div>
+          )) : <p className="empty-catalog">No products have been created yet.</p>}
+        </div>
+      </section>
+    </div>
+  );
 }

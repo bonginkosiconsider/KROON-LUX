@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { useFirebaseCart } from "@/hooks/use-firebase-cart";
 import { useProducts } from "@/hooks/use-products";
+import { resolveFirebaseCartLines } from "@/lib/firebase-product-adapter";
 import { createFirebaseCheckout } from "@/services/firebase-orders";
 
 type CheckoutFormProps = {
@@ -24,13 +25,10 @@ export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) 
     setPending(true);
     setMessage(null);
     const formData = new FormData(event.currentTarget);
-    const lines = items.flatMap((item) => {
-      const product = products.find((candidate) => candidate.id === item.productId);
-      return product && product.inventoryCount > 0 ? [{ product, quantity: Math.min(item.quantity, product.inventoryCount) }] : [];
-    });
-    const total = lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0) + (lines.length ? 95 : 0);
+    const lines = resolveFirebaseCartLines(products, items);
+    const total = lines.reduce((sum, line) => sum + (line.variant.salePrice ?? line.variant.price) * line.quantity, 0) + (lines.length ? 95 : 0);
     try {
-      await createFirebaseCheckout({ firstName: String(formData.get("firstName")), lastName: String(formData.get("lastName")), email: String(formData.get("email")), phone: String(formData.get("phone") || ""), address: [formData.get("address"), formData.get("apartment"), formData.get("city"), formData.get("province"), formData.get("postalCode"), formData.get("country")].filter(Boolean).join(", ") }, lines.map(({ product, quantity }) => ({ productId: product.id, title: product.title, quantity, unitPrice: product.price, imageUrl: product.imageUrls[0] })), total);
+      await createFirebaseCheckout({ firstName: String(formData.get("firstName")), lastName: String(formData.get("lastName")), email: String(formData.get("email")), phone: String(formData.get("phone") || ""), address: [formData.get("address"), formData.get("apartment"), formData.get("city"), formData.get("province"), formData.get("postalCode"), formData.get("country")].filter(Boolean).join(", ") }, lines.map(({ product, variant, quantity }) => ({ productId: product.id, variationId: variant.variationId, title: product.productType === "variable" ? `${product.title} - ${variant.name}` : product.title, quantity, unitPrice: variant.salePrice ?? variant.price, sku: variant.sku, attributes: variant.attributes, imageUrl: variant.imageUrl ?? product.imageUrls[0] })), total);
       clear();
       setMessage("Order created successfully. It is pending payment confirmation.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Checkout could not be created."); }

@@ -1,6 +1,28 @@
 import type { Timestamp } from "firebase/firestore";
 
 export type FirestoreTimestamp = Timestamp | null;
+export type ProductType = "simple" | "variable" | "grouped" | "external" | "downloadable" | "virtual";
+export type ProductStockStatus = "in-stock" | "out-of-stock" | "on-backorder";
+export type BackorderPolicy = "not-allowed" | "allowed" | "allowed-with-notice";
+export type ProductStatus = "draft" | "published" | "pending-review" | "private";
+export type ProductVisibility = "shop-and-search" | "shop-only" | "search-only" | "hidden";
+export type ProductDimensions = { length?: number; width?: number; height?: number };
+export type ProductAttribute = { name: string; values: string; usedForVariations?: boolean };
+export type ProductVariation = {
+  id: string;
+  name: string;
+  sku?: string;
+  price: number;
+  salePrice?: number;
+  manageStock?: boolean;
+  inventoryCount: number;
+  lowStockThreshold?: number;
+  stockStatus?: ProductStockStatus;
+  imageUrl?: string;
+  weight?: number;
+  dimensions?: ProductDimensions;
+  attributes?: Record<string, string>;
+};
 
 export type Product = {
   id: string;
@@ -9,22 +31,24 @@ export type Product = {
   description: string;
   price: number;
   salePrice?: number;
-  productType?: "simple" | "variable" | "grouped" | "external" | "downloadable" | "virtual";
+  productType?: ProductType;
   shortDescription?: string;
   sku?: string;
-  stockStatus?: "in-stock" | "out-of-stock";
-  backorders?: "not-allowed" | "allowed" | "allowed-with-notice";
+  manageStock?: boolean;
+  stockStatus?: ProductStockStatus;
+  lowStockThreshold?: number;
+  backorders?: BackorderPolicy;
   weight?: number;
-  dimensions?: { length?: number; width?: number; height?: number };
+  dimensions?: ProductDimensions;
   shippingClass?: string;
-  attributes?: { name: string; values: string }[];
-  variations?: { name: string; price: number; inventoryCount: number }[];
+  attributes?: ProductAttribute[];
+  variations?: ProductVariation[];
   metaTitle?: string;
   metaDescription?: string;
   categories?: string[];
   tags?: string[];
-  status?: "draft" | "published" | "pending-review" | "private";
-  visibility?: "shop-and-search" | "shop-only" | "search-only" | "hidden";
+  status?: ProductStatus;
+  visibility?: ProductVisibility;
   category: string;
   inventoryCount: number;
   imageUrls: string[];

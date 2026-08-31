@@ -27,6 +27,14 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /productSlugs/{slugId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /productSkus/{skuId} {
+      allow read, write: if isAdmin();
+    }
+
     match /orders/{orderId} {
       allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
       allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);
