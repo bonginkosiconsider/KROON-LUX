@@ -32,6 +32,16 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /conversations/{conversationId} {
+      allow create: if true;
+      allow update: if !signedIn() || isAdmin();
+      allow read, update, delete: if isAdmin();
+      match /messages/{messageId} {
+        allow create: if true;
+        allow read, update, delete: if isAdmin();
+      }
+    }
+
     match /productSlugs/{slugId} {
       allow read, write: if isAdmin();
     }

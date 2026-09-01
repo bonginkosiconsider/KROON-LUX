@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { AdminGate } from "@/components/firebase/AdminGate";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { auth } from "@/lib/firebase";
+import { subscribeConversations } from "@/services/firebase-messages";
+import { useEffect, useState } from "react";
 
 const navigation = [
   ["/admin", "Overview"],
@@ -21,13 +23,15 @@ const navigation = [
   ["/admin/orders", "Orders"],
   ["/admin/returns", "Returns"],
   ["/admin/payouts", "Payouts"],
-  ["/admin/my-store", "My Store"],
+  ["/admin/inbox", "Inbox"],
   ["/admin/settings", "Settings"],
 ] as const;
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useFirebaseAuth();
+  const [unread, setUnread] = useState(0);
+  useEffect(() => subscribeConversations((items) => setUnread(items.filter((item) => item.unreadByAdmin).length)), []);
 
   return (
     <AdminGate>
@@ -40,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <p>Site management</p>
             {navigation.map(([href, label]) => (
               <Link className={pathname === href ? "active" : undefined} href={href} key={href}>
-                {label}
+                {label}{href === "/admin/inbox" && unread ? <span className="admin-unread-badge">{unread}</span> : null}
               </Link>
             ))}
           </nav>
