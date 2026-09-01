@@ -350,8 +350,6 @@ export async function trackReferralCapture(codeInput: string, source: Exclude<Re
       customerId: customerId ?? null,
       visitorId: getOrCreateVisitorId(),
       discountPercent: activeReferral.discountPercent,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     });
   } catch {
     // Referral state is still stored locally so checkout can apply the code after sign-in.
