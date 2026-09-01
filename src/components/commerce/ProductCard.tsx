@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { effectiveVariantPriceInCents, variantAvailableQuantity } from "@/lib/firebase-product-adapter";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 type ProductCardProps = {
   product: {
@@ -18,12 +21,13 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { currency } = useStoreSettings();
   const variants = product.variants;
   const variant = variants.find((item) => variantAvailableQuantity({ stockQuantity: item.stockQuantity ?? 0, reservedStock: item.reservedStock ?? 0 }) > 0) ?? variants[0];
   const prices = variants.map((item) => effectiveVariantPriceInCents({ priceInCents: item.priceInCents, salePriceCents: item.salePriceCents ?? null })).filter(Number.isFinite);
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : minPrice;
-  const priceLabel = minPrice === maxPrice ? formatMoney(minPrice) : `${formatMoney(minPrice)} - ${formatMoney(maxPrice)}`;
+  const priceLabel = minPrice === maxPrice ? formatMoney(minPrice, currency) : `${formatMoney(minPrice, currency)} - ${formatMoney(maxPrice, currency)}`;
   const available = variant ? variantAvailableQuantity({ stockQuantity: variant.stockQuantity ?? 0, reservedStock: variant.reservedStock ?? 0 }) > 0 : false;
   const image = product.images[0];
 

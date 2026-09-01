@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { announcementBarConfig } from "@/config/announcement-bar";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export function AnnouncementBar() {
   const {
@@ -11,19 +12,22 @@ export function AnnouncementBar() {
     rotationIntervalMs,
     transitionDurationMs,
   } = announcementBarConfig;
+  const { announcement } = useStoreSettings();
+  const messages = announcement.trim() ? [announcement.trim()] : announcements;
   const [activeAnnouncement, setActiveAnnouncement] = useState(0);
 
   useEffect(() => {
-    if (!autoRotate || announcements.length < 2) return;
+    if (!autoRotate || messages.length < 2) return;
 
     const interval = window.setInterval(() => {
-      setActiveAnnouncement((current) => (current + 1) % announcements.length);
+      setActiveAnnouncement((current) => (current + 1) % messages.length);
     }, rotationIntervalMs);
 
     return () => window.clearInterval(interval);
-  }, [announcements.length, autoRotate, rotationIntervalMs]);
+  }, [messages.length, autoRotate, rotationIntervalMs]);
 
-  if (!isVisible || announcements.length === 0) return null;
+  if (!isVisible || messages.length === 0) return null;
+  const active = activeAnnouncement % messages.length;
 
   return (
     <aside
@@ -32,13 +36,13 @@ export function AnnouncementBar() {
       style={{ "--announcement-transition-duration": `${transitionDurationMs}ms` } as React.CSSProperties}
     >
       <div className="announcement-bar-content">
-        {announcements.map((announcement, index) => (
+        {messages.map((message, index) => (
           <p
-            aria-hidden={index !== activeAnnouncement}
-            className={`announcement-bar-message${index === activeAnnouncement ? " is-active" : ""}`}
-            key={announcement}
+            aria-hidden={index !== active}
+            className={`announcement-bar-message${index === active ? " is-active" : ""}`}
+            key={message}
           >
-            {announcement}
+            {message}
           </p>
         ))}
       </div>

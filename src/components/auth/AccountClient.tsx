@@ -4,6 +4,9 @@ import Link from "next/link";
 import { AuthForms } from "@/components/auth/AuthForms";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
+import { useEffect, useState } from "react";
+import { dateLabel, type Order } from "@/lib/firebase-models";
+import { subscribeCustomerOrders } from "@/services/firebase-orders";
 
 function splitDisplayName(displayName: string | null) {
   const parts = displayName?.trim().split(/\s+/).filter(Boolean) ?? [];
@@ -12,6 +15,8 @@ function splitDisplayName(displayName: string | null) {
 
 export function AccountClient() {
   const { user, profile, loading } = useFirebaseAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  useEffect(() => user ? subscribeCustomerOrders(user.uid, setOrders) : undefined, [user]);
   const fallbackName = splitDisplayName(user?.displayName ?? null);
   const firstName = profile?.firstName ?? fallbackName.firstName;
   const lastName = profile?.lastName ?? fallbackName.lastName;
@@ -39,8 +44,8 @@ export function AccountClient() {
       <article>
         <p className="eyebrow">Orders</p>
         <h2>Order history</h2>
-        <p>Customer-owned order history is backed by `/api/orders/*` in the planned delivery sequence.</p>
-        <Link className="text-link" href="/cart">View bag</Link>
+        {orders.length ? <div className="account-orders">{orders.slice(0, 4).map((order) => <p key={order.id}><strong>#{order.id.slice(0, 10)}</strong><span>{dateLabel(order.createdAt)} · {order.shippingStatus} · R {order.totalAmount.toFixed(2)}</span></p>)}</div> : <p>No orders yet. Your completed orders will appear here.</p>}
+        <Link className="text-link" href="/shop">Continue shopping</Link>
       </article>
       <article>
         <p className="eyebrow">Referrals</p>

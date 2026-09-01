@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { formatMoney } from "@/lib/format";
 import { effectiveVariantPriceInCents, variantAvailableQuantity, variantDescriptor } from "@/lib/firebase-product-adapter";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 export type PurchasePanelVariant = {
   id: string;
@@ -27,16 +28,17 @@ function variantAttributes(variant: PurchasePanelVariant) {
   return attributes;
 }
 
-function priceRangeLabel(variants: PurchasePanelVariant[]) {
+function priceRangeLabel(variants: PurchasePanelVariant[], currency: string) {
   const prices = variants.map((variant) => effectiveVariantPriceInCents({ priceInCents: variant.priceInCents, salePriceCents: variant.salePriceCents ?? null })).filter(Number.isFinite);
-  if (!prices.length) return formatMoney(0);
+  if (!prices.length) return formatMoney(0, currency);
 
   const min = Math.min(...prices);
   const max = Math.max(...prices);
-  return min === max ? formatMoney(min) : `${formatMoney(min)} - ${formatMoney(max)}`;
+  return min === max ? formatMoney(min, currency) : `${formatMoney(min, currency)} - ${formatMoney(max, currency)}`;
 }
 
 export function ProductPurchasePanel<T extends PurchasePanelVariant>({ variants, onVariantChange }: { variants: T[]; onVariantChange?: (variant: T | null) => void }) {
+  const { currency } = useStoreSettings();
   const firstAvailable = variants.find((variant) => variantAvailableQuantity(variant) > 0) ?? variants[0] ?? null;
   const [selectedId, setSelectedId] = useState(() => variants.length <= 1 ? firstAvailable?.id ?? "" : "");
   const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({});
@@ -46,7 +48,7 @@ export function ProductPurchasePanel<T extends PurchasePanelVariant>({ variants,
   }, [firstAvailable, selectedId, variants]);
   const available = selected ? variantAvailableQuantity(selected) : 0;
   const attributeNames = useMemo(() => [...new Set(variants.flatMap((variant) => Object.keys(variantAttributes(variant))))], [variants]);
-  const price = selected ? formatMoney(effectiveVariantPriceInCents(selected)) : priceRangeLabel(variants);
+  const price = selected ? formatMoney(effectiveVariantPriceInCents(selected), currency) : priceRangeLabel(variants, currency);
 
   function selectAttribute(name: string, value: string) {
     const next = { ...attributeSelections, [name]: value };
