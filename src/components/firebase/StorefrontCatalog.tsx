@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/commerce/ProductCard";
 import { ReferralCapture } from "@/components/firebase/ReferralCapture";
 import { useProducts } from "@/hooks/use-products";
 import { firebaseProductCard } from "@/lib/firebase-product-adapter";
-import type { Product } from "@/lib/firebase-models";
+import { slugify, type Product } from "@/lib/firebase-models";
 
 function productMatchesSearch(product: Product, value: string) {
   const term = value.trim().toLowerCase();
@@ -73,7 +73,7 @@ export function FirebaseCategoryGrid() {
       </div>
       <div className="category-grid">
         {categories.map((category, index) => (
-          <a className={`category-card category-card-${index + 1}`} href={`/shop?category=${encodeURIComponent(category)}`} key={category}>
+          <a className={`category-card category-card-${index + 1}`} href={`/shop?category=${encodeURIComponent(slugify(category))}`} key={category}>
             <span>Explore</span>
             <h3>{category}</h3>
             <span aria-hidden="true">-&gt;</span>
@@ -90,7 +90,7 @@ export function StorefrontCatalog({ compact = false }: { compact?: boolean }) {
   const [search, setSearch] = useState(() => params.get("search") ?? "");
   const [category, setCategory] = useState(() => params.get("category") ?? "");
   const categories = useMemo(() => [...new Set(products.map((product) => product.category))].sort(), [products]);
-  const filtered = products.filter((product) => productMatchesSearch(product, search) && (!category || product.category === category));
+  const filtered = products.filter((product) => productMatchesSearch(product, search) && (!category || slugify(product.category) === category));
   const visible = compact ? filtered.filter((product) => product.featured).slice(0, 3) : filtered;
 
   if (compact) {
@@ -120,7 +120,7 @@ export function StorefrontCatalog({ compact = false }: { compact?: boolean }) {
           <select value={category} onChange={(event) => setCategory(event.target.value)}>
             <option value="">All categories</option>
             {categories.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={slugify(item)}>{item}</option>
             ))}
           </select>
         </label>

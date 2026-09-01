@@ -33,6 +33,7 @@ export type Promoter = {
   code: string;
   status: PromoterStatus;
   discountPercent: number;
+  totalSales?: number;
   notes?: string;
   createdAt: FirestoreTimestamp;
   updatedAt: FirestoreTimestamp;
@@ -80,6 +81,7 @@ export type AdminPromoterInput = PromoterApplicationInput & {
 
 const promoters = collection(db, "promoters");
 const referrals = collection(db, "referrals");
+const referralRedemptions = collection(db, "referralRedemptions");
 const referralTtlMs = 30 * 24 * 60 * 60 * 1000;
 const referralStorageKey = "kroon-luxe-active-referral";
 const visitorStorageKey = "kroon-luxe-visitor";
@@ -222,6 +224,35 @@ export async function getApprovedPromoterByCode(codeInput: string) {
   return promoter?.status === "approved" ? promoter : null;
 }
 
+/** Reserves one promoter code for one authenticated customer. */
+async function reserveReferralForCustomer(promoter: Promoter, customerId: string) {
+  if (promoter.userId === customerId) throw new Error("You cannot use your own referral code.");
+
+  const redemptionRef = doc(referralRedemptions, `${promoter.id}_${customerId}`);
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(redemptionRef);
+    if (snapshot.exists() && snapshot.data().status === "used") throw new Error("This referral code has already been used.");
+    if (snapshot.exists() && snapshot.data().status === "reserved") return;
+    transaction.set(redemptionRef, {
+      referralCode: promoter.code,
+      promoterId: promoter.id,
+      customerId,
+      status: "reserved",
+      reservedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  });
+}
+
+export async function markReferralUsed(promoterId: string, customerId: string, orderId: string) {
+  return updateDoc(doc(referralRedemptions, `${promoterId}_${customerId}`), {
+    status: "used",
+    orderId,
+    usedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
 export async function isPromoterCodeAvailable(codeInput: string) {
   const code = normalizePromoterCode(codeInput);
   if (validatePromoterCode(code)) return false;
@@ -327,6 +358,14 @@ export async function trackReferralCapture(codeInput: string, source: Exclude<Re
   const promoter = await getApprovedPromoterByCode(codeInput);
   if (!promoter) return { ok: false as const, message: "That promoter code is not active." };
 
+  if (customerId) {
+    try {
+      await reserveReferralForCustomer(promoter, customerId);
+    } catch (error) {
+      return { ok: false as const, message: error instanceof Error ? error.message : "This referral code could not be activated." };
+    }
+  }
+
   const activeReferral: ActiveReferral = {
     promoterId: promoter.id,
     code: promoter.code,
@@ -381,6 +420,12 @@ export async function resolveStoredReferral(customerId?: string | null) {
   };
 
   if (customerId && next.customerId !== customerId) {
+    try {
+      await reserveReferralForCustomer(promoter, customerId);
+    } catch {
+      clearStoredReferral();
+      return null;
+    }
     const nextWithCustomer = {
       ...next,
       customerId,

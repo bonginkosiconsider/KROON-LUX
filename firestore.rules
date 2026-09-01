@@ -96,6 +96,12 @@ service cloud.firestore {
           request.resource.data.status == 'converted');
       allow update, delete: if isAdmin();
     }
+    match /referralRedemptions/{redemptionId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && resource.data.customerId == request.auth.uid && request.resource.data.customerId == resource.data.customerId);
+      allow delete: if false;
+    }
     match /settings/{settingId} { allow read: if true; allow write: if isAdmin(); }
     match /shippingZones/{zoneId} { allow read, write: if isAdmin(); }
     match /taxRates/{rateId} { allow read, write: if isAdmin(); }

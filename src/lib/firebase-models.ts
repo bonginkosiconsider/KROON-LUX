@@ -114,12 +114,27 @@ export type OrderItem = {
   quantity: number;
   unitPrice: number;
   imageUrl?: string;
+  sku?: string;
+  variant?: string;
+  variationId?: string;
+  attributes?: Record<string, string>;
 };
+
+export type OrderAddress = { name?: string; address?: string; suburb?: string; city?: string; province?: string; postalCode?: string; country?: string };
 
 export type Order = {
   id: string;
   customerId?: string;
   customer: { name: string; email: string; phone?: string; address?: string };
+  shippingAddress?: OrderAddress;
+  billingAddress?: OrderAddress;
+  shippingMethod?: string;
+  shippingCarrier?: string;
+  trackingNumber?: string;
+  taxAmount?: number;
+  paymentGateway?: string;
+  notes?: string;
+  activity?: { action: string; at: unknown; by?: string }[];
   items: OrderItem[];
   subtotalAmount?: number;
   shippingAmount?: number;

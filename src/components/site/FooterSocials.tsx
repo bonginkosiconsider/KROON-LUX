@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { defaultStoreSettings, subscribeStoreSettings, type SocialPlatform } from "@/services/firebase-settings";
+import type { SocialPlatform } from "@/services/firebase-settings";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 
 const labels: Record<SocialPlatform, string> = { whatsapp: "WhatsApp", tiktok: "TikTok", facebook: "Facebook", instagram: "Instagram" };
 
@@ -13,8 +13,7 @@ function SocialGlyph({ platform }: { platform: SocialPlatform }) {
 }
 
 export function FooterSocials() {
-  const [settings, setSettings] = useState(defaultStoreSettings);
-  useEffect(() => subscribeStoreSettings(setSettings), []);
+  const settings = useStoreSettings();
   const links = settings.socialLinks.filter((link) => link.enabled && link.url.trim());
   return <section aria-label="Follow us on social media" className="footer-socials"><span>FOLLOW US ON</span><div>{links.map((link) => <a aria-label={`Follow Kroon Luxe on ${labels[link.platform]}`} data-platform={link.platform} href={link.url} key={link.platform} rel="noopener noreferrer" target="_blank" title={labels[link.platform]}><SocialGlyph platform={link.platform} /></a>)}</div></section>;
 }

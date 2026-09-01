@@ -5,6 +5,7 @@ import { ServiceBenefits } from "@/components/site/ServiceBenefits";
 import { TestimonialCarousel } from "@/components/site/TestimonialCarousel";
 import { FirebaseCategoryGrid, FirebaseProductGrid } from "@/components/firebase/StorefrontCatalog";
 import { BrandsLineup } from "@/components/firebase/BrandsLineup";
+import { ReferralCapture } from "@/components/firebase/ReferralCapture";
 
 export default function Home() {
   const facets = { categories: [] as { id: string; name: string; slug: string; parentId: string | null }[] };
@@ -12,6 +13,7 @@ export default function Home() {
     <>
       <SiteHeader />
       <main>
+        <Suspense fallback={null}><ReferralCapture /></Suspense>
         <HeroSlideshow />
 
         <section className="section" id="collection">
@@ -57,3 +59,4 @@ export default function Home() {
   );
 }
 
+import { Suspense } from "react";

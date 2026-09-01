@@ -33,22 +33,18 @@ export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) 
     const lines = resolveFirebaseCartLines(products, items);
 
     try {
-      await createFirebaseCheckout(
+      const orderRef = await createFirebaseCheckout(
         {
           firstName: String(formData.get("firstName") ?? ""),
           lastName: String(formData.get("lastName") ?? ""),
           email: String(formData.get("email") ?? ""),
           phone: String(formData.get("phone") || ""),
-          address: [
-            formData.get("address"),
-            formData.get("apartment"),
-            formData.get("city"),
-            formData.get("province"),
-            formData.get("postalCode"),
-            formData.get("country"),
-          ]
-            .filter(Boolean)
-            .join(", "),
+          address: String(formData.get("address") ?? ""),
+          apartment: String(formData.get("apartment") ?? ""),
+          city: String(formData.get("city") ?? ""),
+          province: String(formData.get("province") ?? ""),
+          postalCode: String(formData.get("postalCode") ?? ""),
+          country: String(formData.get("country") ?? ""),
         },
         lines.map(({ product, variant, quantity }) => ({
           productId: product.id,
@@ -62,7 +58,7 @@ export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) 
         })),
       );
       clear();
-      setMessage("Order created successfully. It is pending payment confirmation.");
+      setMessage(`Order #${orderRef.id.slice(0, 10)} was created successfully. It is pending payment confirmation.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Checkout could not be created.");
     } finally {

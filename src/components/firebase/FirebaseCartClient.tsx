@@ -7,6 +7,7 @@ import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { useFirebaseCart } from "@/hooks/use-firebase-cart";
 import { useProducts } from "@/hooks/use-products";
 import { formatMoney } from "@/lib/format";
+import { useStoreSettings } from "@/hooks/use-store-settings";
 import {
   calculateReferralDiscountCents,
 } from "@/services/firebase-referrals";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/firebase-product-adapter";
 
 export function FirebaseCartClient() {
+  const { currency } = useStoreSettings();
   const { user } = useFirebaseAuth();
   const referral = useActiveReferral(user?.uid);
   const { items, updateQuantity } = useFirebaseCart();
@@ -71,7 +73,7 @@ export function FirebaseCartClient() {
                       </button>
                     </div>
                   </div>
-                  <strong>{formatMoney(effectiveVariantPriceInCents(variant) * quantity)}</strong>
+                  <strong>{formatMoney(effectiveVariantPriceInCents(variant) * quantity, currency)}</strong>
                 </article>
               );
             })}
@@ -82,21 +84,21 @@ export function FirebaseCartClient() {
             <dl>
               <div>
                 <dt>Subtotal</dt>
-                <dd>{formatMoney(subtotal)}</dd>
+                <dd>{formatMoney(subtotal, currency)}</dd>
               </div>
               <div>
                 <dt>Shipping</dt>
-                <dd>{formatMoney(shipping)}</dd>
+                <dd>{formatMoney(shipping, currency)}</dd>
               </div>
               {referral ? (
                 <div>
                   <dt>{user ? `${referral.code} referral` : "Referral pending"}</dt>
-                  <dd>{user ? `-${formatMoney(discount)}` : "Sign in"}</dd>
+                  <dd>{user ? `-${formatMoney(discount, currency)}` : "Sign in"}</dd>
                 </div>
               ) : null}
               <div className="summary-total">
                 <dt>Total</dt>
-                <dd>{formatMoney(total)}</dd>
+                <dd>{formatMoney(total, currency)}</dd>
               </div>
             </dl>
             <Link className="button button-dark" href="/checkout">
