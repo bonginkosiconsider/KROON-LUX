@@ -10,7 +10,7 @@ import {
   validatePromoterCode,
 } from "@/services/firebase-referrals";
 
-export function CouponForm({ initialCode }: { initialCode?: string | null }) {
+export function CouponForm({ initialCode, label = "Promoter code" }: { initialCode?: string | null; label?: string }) {
   const { user } = useFirebaseAuth();
   const referral = useActiveReferral(user?.uid);
   const [code, setCode] = useState(() => normalizePromoterCode(initialCode ?? ""));
@@ -60,7 +60,7 @@ export function CouponForm({ initialCode }: { initialCode?: string | null }) {
   return (
     <form className="coupon-form" onSubmit={submit}>
       <label>
-        Promoter code
+        {label}
         <input
           name="couponCode"
           onChange={(event) => setCode(normalizePromoterCode(event.currentTarget.value))}

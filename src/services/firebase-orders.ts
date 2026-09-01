@@ -34,6 +34,8 @@ type CheckoutInput = {
   province?: string;
   postalCode?: string;
   country?: string;
+  tipCents?: number;
+  billing?: { firstName: string; lastName: string; address: string; city?: string; province?: string; postalCode?: string; country?: string };
 };
 
 function centsToAmount(cents: number) {
@@ -77,7 +79,8 @@ export async function createFirebaseCheckout(input: CheckoutInput, items: Order[
   const subtotalCents = itemSubtotalCents(items);
   const shippingCents = subtotalCents > 0 && subtotalCents < 150000 ? 9500 : 0;
   const discountCents = calculateReferralDiscountCents(subtotalCents, activeReferral);
-  const totalCents = Math.max(0, subtotalCents + shippingCents - discountCents);
+  const tipCents = Math.max(0, Math.round(input.tipCents ?? 0));
+  const totalCents = Math.max(0, subtotalCents + shippingCents - discountCents + tipCents);
   const orderRef = doc(collection(db, "orders"));
   const batch = writeBatch(db);
   const orderData: Omit<Order, "id" | "createdAt" | "updatedAt"> = {
@@ -96,7 +99,9 @@ export async function createFirebaseCheckout(input: CheckoutInput, items: Order[
       postalCode: input.postalCode,
       country: input.country,
     },
-    billingAddress: {
+    billingAddress: input.billing ? {
+      name: `${input.billing.firstName} ${input.billing.lastName}`.trim(), address: input.billing.address, city: input.billing.city, province: input.billing.province, postalCode: input.billing.postalCode, country: input.billing.country,
+    } : {
       name: `${input.firstName} ${input.lastName}`.trim(),
       address: [input.address, input.apartment].filter(Boolean).join(", "),
       city: input.city,
@@ -109,6 +114,7 @@ export async function createFirebaseCheckout(input: CheckoutInput, items: Order[
     shippingAmount: centsToAmount(shippingCents),
     taxAmount: 0,
     discountAmount: centsToAmount(discountCents),
+    tipAmount: centsToAmount(tipCents),
     totalAmount: centsToAmount(totalCents),
     referralCode: activeReferral?.code ?? null,
     promoterId: activeReferral?.promoterId ?? null,

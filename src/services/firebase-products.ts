@@ -3,6 +3,8 @@
 import {
   collection,
   doc,
+  getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -12,6 +14,7 @@ import {
   type Unsubscribe,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { productPurchasables, variantAvailableQuantity } from "@/lib/firebase-product-adapter";
 import {
   slugify,
   type BackorderPolicy,
@@ -184,6 +187,53 @@ function mapProduct(id: string, value: Record<string, unknown>): Product {
     createdAt: (value.createdAt as Product["createdAt"]) ?? null,
     updatedAt: (value.updatedAt as Product["updatedAt"]) ?? null,
   };
+}
+
+function sharedValues(first: string[] = [], second: string[] = []) {
+  const secondSet = new Set(second.map((value) => value.toLowerCase()));
+  return first.filter((value) => secondSet.has(value.toLowerCase())).length;
+}
+
+function recommendationScore(current: Product, candidate: Product) {
+  let score = 0;
+  const currentCategories = current.categories?.length ? current.categories : [current.category];
+  const candidateCategories = candidate.categories?.length ? candidate.categories : [candidate.category];
+  score += sharedValues(currentCategories, candidateCategories) * 100;
+  if (current.brandId && current.brandId === candidate.brandId) score += 70;
+  else if (current.brandName && current.brandName.toLowerCase() === candidate.brandName?.toLowerCase()) score += 60;
+  if (current.productType && current.productType === candidate.productType) score += 30;
+  score += sharedValues(current.tags, candidate.tags) * 15;
+
+  const currentAttributes = (current.attributes ?? []).flatMap((attribute) => [attribute.name, attribute.values]);
+  const candidateAttributes = (candidate.attributes ?? []).flatMap((attribute) => [attribute.name, attribute.values]);
+  score += sharedValues(currentAttributes, candidateAttributes) * 5;
+
+  const priceDifference = Math.abs(current.price - candidate.price);
+  score += Math.max(0, 20 - Math.round(priceDifference / Math.max(current.price, 1) * 20));
+  if (candidate.featured) score += 2;
+  return score;
+}
+
+/** Fetches small, relevant candidate sets rather than subscribing to the full catalog. */
+export async function getProductRecommendations(current: Product, maxResults = 4) {
+  const candidateQueries = [
+    getDocs(query(products, where("category", "==", current.category), limit(12))),
+    ...(current.brandId ? [getDocs(query(products, where("brandId", "==", current.brandId), limit(12)))] : []),
+    ...(current.brandName ? [getDocs(query(products, where("brandName", "==", current.brandName), limit(12)))] : []),
+    getDocs(query(products, where("isPublished", "==", true), limit(20))),
+  ];
+  const snapshots = await Promise.all(candidateQueries.map((request) => request.catch(() => null)));
+  const unique = new Map<string, Product>();
+  snapshots.forEach((snapshot) => snapshot?.docs.forEach((item) => {
+    const product = mapProduct(item.id, item.data());
+    if (product.id !== current.id && product.isPublished && productPurchasables(product).some((variant) => variantAvailableQuantity(variant) > 0)) {
+      unique.set(product.id, product);
+    }
+  }));
+
+  return [...unique.values()]
+    .sort((first, second) => recommendationScore(current, second) - recommendationScore(current, first) || newestFirst(second, first))
+    .slice(0, maxResults);
 }
 
 export function subscribeProducts(callback: (products: Product[]) => void, publishedOnly = true, onError?: (error: Error) => void): Unsubscribe {

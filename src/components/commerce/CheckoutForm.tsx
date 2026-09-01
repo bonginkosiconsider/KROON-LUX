@@ -1,122 +1,29 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { formatMoney } from "@/lib/format";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { useFirebaseCart } from "@/hooks/use-firebase-cart";
 import { useProducts } from "@/hooks/use-products";
-import {
-  effectiveVariantPriceInCents,
-  resolveFirebaseCartLines,
-  variantDescriptor,
-} from "@/lib/firebase-product-adapter";
+import { effectiveVariantPriceInCents, resolveFirebaseCartLines, variantDescriptor } from "@/lib/firebase-product-adapter";
 import { createFirebaseCheckout } from "@/services/firebase-orders";
 
-type CheckoutFormProps = {
-  email?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-};
+type Props = { email?: string | null; firstName?: string | null; lastName?: string | null; subtotal: number; shipping: number; currency: string; onTipChange: (tip: number) => void };
+type TipChoice = "none" | "10" | "15" | "20" | "custom";
 
-export function CheckoutForm({ email, firstName, lastName }: CheckoutFormProps) {
-  const [message, setMessage] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-  const { user } = useFirebaseAuth();
-  const { items, clear } = useFirebaseCart();
-  const { products } = useProducts();
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    setMessage(null);
-
-    const formData = new FormData(event.currentTarget);
-    const lines = resolveFirebaseCartLines(products, items);
-
-    try {
-      const orderRef = await createFirebaseCheckout(
-        {
-          firstName: String(formData.get("firstName") ?? ""),
-          lastName: String(formData.get("lastName") ?? ""),
-          email: String(formData.get("email") ?? ""),
-          phone: String(formData.get("phone") || ""),
-          address: String(formData.get("address") ?? ""),
-          apartment: String(formData.get("apartment") ?? ""),
-          city: String(formData.get("city") ?? ""),
-          province: String(formData.get("province") ?? ""),
-          postalCode: String(formData.get("postalCode") ?? ""),
-          country: String(formData.get("country") ?? ""),
-        },
-        lines.map(({ product, variant, quantity }) => ({
-          productId: product.id,
-          variationId: variant.variationId,
-          title: product.productType === "variable" ? `${product.title} - ${variantDescriptor(variant)}` : product.title,
-          quantity,
-          unitPrice: effectiveVariantPriceInCents(variant) / 100,
-          sku: variant.sku,
-          attributes: variant.attributes,
-          imageUrl: variant.imageUrl ?? product.imageUrls[0],
-        })),
-      );
-      clear();
-      setMessage(`Order #${orderRef.id.slice(0, 10)} was created successfully. It is pending payment confirmation.`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Checkout could not be created.");
-    } finally {
-      setPending(false);
-    }
-  }
-
-  return (
-    <form className="checkout-form" onSubmit={submit}>
-      <div className="form-grid">
-        <label>
-          First name
-          <input name="firstName" defaultValue={firstName ?? ""} required />
-        </label>
-        <label>
-          Last name
-          <input name="lastName" defaultValue={lastName ?? ""} required />
-        </label>
-        <label>
-          Email
-          <input name="email" type="email" defaultValue={email ?? ""} required />
-        </label>
-        <label>
-          Phone
-          <input name="phone" type="tel" />
-        </label>
-      </div>
-      <label>
-        Address
-        <input name="address" autoComplete="shipping address-line1" required />
-      </label>
-      <label>
-        Apartment, suite or building
-        <input name="apartment" autoComplete="shipping address-line2" />
-      </label>
-      <div className="form-grid">
-        <label>
-          City
-          <input name="city" autoComplete="shipping address-level2" required />
-        </label>
-        <label>
-          Province
-          <input name="province" autoComplete="shipping address-level1" required />
-        </label>
-        <label>
-          Postal code
-          <input name="postalCode" autoComplete="shipping postal-code" required />
-        </label>
-        <label>
-          Country
-          <input name="country" defaultValue="South Africa" autoComplete="shipping country-name" required />
-        </label>
-      </div>
-      {!user ? <p className="form-message">Please sign in before placing your order.</p> : null}
-      <button className="button button-dark" type="submit" disabled={pending || !user}>
-        {pending ? "Creating secure order..." : "Continue to payment"}
-      </button>
-      {message ? <p className="form-message">{message}</p> : null}
-    </form>
-  );
+export function CheckoutForm({ email, firstName, lastName, subtotal, shipping, currency, onTipChange }: Props) {
+  const [message, setMessage] = useState<string | null>(null); const [pending, setPending] = useState(false); const [hasAddress, setHasAddress] = useState(false); const [differentBilling, setDifferentBilling] = useState(false); const [tipChoice, setTipChoice] = useState<TipChoice>("none"); const [customTip, setCustomTip] = useState("");
+  const { user } = useFirebaseAuth(); const { items, clear } = useFirebaseCart(); const { products } = useProducts();
+  const tip = useMemo(() => tipChoice === "custom" ? Math.max(0, Math.round(Number(customTip || 0) * 100)) : tipChoice === "none" ? 0 : Math.round(subtotal * Number(tipChoice) / 100), [customTip, subtotal, tipChoice]);
+  function selectTip(choice: TipChoice) { setTipChoice(choice); onTipChange(choice === "custom" ? Math.max(0, Math.round(Number(customTip || 0) * 100)) : choice === "none" ? 0 : Math.round(subtotal * Number(choice) / 100)); }
+  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setPending(true); setMessage(null); const data = new FormData(event.currentTarget); const lines = resolveFirebaseCartLines(products, items); try { if (lines.length !== items.length) throw new Error("One or more items are no longer available. Please review your bag."); const orderRef = await createFirebaseCheckout({ firstName: String(data.get("firstName") ?? ""), lastName: String(data.get("lastName") ?? ""), email: String(data.get("email") ?? ""), phone: String(data.get("phone") || ""), address: String(data.get("address") ?? ""), apartment: String(data.get("apartment") ?? ""), city: String(data.get("city") ?? ""), province: String(data.get("province") ?? ""), postalCode: String(data.get("postalCode") ?? ""), country: String(data.get("country") ?? "South Africa"), tipCents: tip, billing: differentBilling ? { firstName: String(data.get("billingFirstName") ?? ""), lastName: String(data.get("billingLastName") ?? ""), address: String(data.get("billingAddress") ?? ""), city: String(data.get("billingCity") ?? ""), province: String(data.get("billingProvince") ?? ""), postalCode: String(data.get("billingPostalCode") ?? ""), country: "South Africa" } : undefined }, lines.map(({ product, variant, quantity }) => ({ productId: product.id, variationId: variant.variationId, title: product.productType === "variable" ? `${product.title} - ${variantDescriptor(variant)}` : product.title, quantity, unitPrice: effectiveVariantPriceInCents(variant) / 100, sku: variant.sku, attributes: variant.attributes, imageUrl: variant.imageUrl ?? product.imageUrls[0] }))); clear(); setMessage(`Order #${orderRef.id.slice(0, 10)} was created. It is pending payment confirmation.`); } catch (error) { setMessage(error instanceof Error ? error.message : "Checkout could not be created."); } finally { setPending(false); } }
+  return <form className="checkout-form-redesign" onSubmit={submit}>
+    <section className="checkout-section"><div className="checkout-section-heading"><h1>Contact</h1><span>Signed in</span></div><label>Email address<input name="email" type="email" defaultValue={email ?? ""} autoComplete="email" required /></label><label className="checkout-check"><input type="checkbox" name="marketing" /><span>Email me with news and offers</span></label></section>
+    <section className="checkout-section"><h2>Delivery</h2><label>Country / Region<select name="country" defaultValue="South Africa"><option>South Africa</option></select></label><div className="checkout-two-columns"><label>First name<input name="firstName" defaultValue={firstName ?? ""} autoComplete="given-name" required /></label><label>Last name<input name="lastName" defaultValue={lastName ?? ""} autoComplete="family-name" required /></label></div><label>Company <em>(optional)</em><input name="company" autoComplete="organization" /></label><label>Address<input name="address" autoComplete="shipping address-line1" onChange={(event) => setHasAddress(Boolean(event.target.value.trim()))} required /></label><label>Apartment, suite, etc. <em>(optional)</em><input name="apartment" autoComplete="shipping address-line2" /></label><div className="checkout-three-columns"><label>City<input name="city" autoComplete="shipping address-level2" required /></label><label>Province<select name="province" defaultValue="Gauteng" required><option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option><option>Eastern Cape</option><option>Free State</option><option>Limpopo</option><option>Mpumalanga</option><option>North West</option><option>Northern Cape</option></select></label><label>Postal code<input name="postalCode" autoComplete="shipping postal-code" required /></label></div><label>Phone <em>(optional)</em><input name="phone" type="tel" autoComplete="tel" /></label><label className="checkout-check"><input type="checkbox" name="saveInfo" /><span>Save this information for next time</span></label></section>
+    <section className="checkout-section"><h2>Shipping method</h2>{hasAddress ? <label className="checkout-choice"><input defaultChecked name="shippingMethod" type="radio" value="standard" /><span><b>Standard delivery</b><small>Calculated from your order</small></span><strong>{formatMoney(shipping, currency)}</strong></label> : <p className="checkout-muted-box">Enter your shipping address to view available shipping methods.</p>}</section>
+    <section className="checkout-section"><h2>Payment</h2><p className="checkout-supporting-text">All transactions are secure and encrypted.</p><div className="checkout-payment-method"><b>Payment on order confirmation</b><span>Your order will be created securely before payment is confirmed.</span></div></section>
+    <section className="checkout-section"><h2>Billing address</h2><label className="checkout-choice"><input checked={!differentBilling} onChange={() => setDifferentBilling(false)} type="radio" name="billingChoice" /><span><b>Same as shipping address</b></span></label><label className="checkout-choice"><input checked={differentBilling} onChange={() => setDifferentBilling(true)} type="radio" name="billingChoice" /><span><b>Use a different billing address</b></span></label>{differentBilling ? <div className="checkout-billing-fields"><div className="checkout-two-columns"><label>First name<input name="billingFirstName" required /></label><label>Last name<input name="billingLastName" required /></label></div><label>Address<input name="billingAddress" required /></label><div className="checkout-three-columns"><label>City<input name="billingCity" required /></label><label>Province<input name="billingProvince" required /></label><label>Postal code<input name="billingPostalCode" required /></label></div></div> : null}</section>
+    <section className="checkout-section"><h2>Add tip</h2><label className="checkout-check checkout-tip-toggle"><input type="checkbox" checked={tipChoice !== "none"} onChange={(event) => selectTip(event.target.checked ? "10" : "none")} /><span>Show your support for the team at Kroon Luxe</span></label><div className="tip-options">{(["10", "15", "20", "none"] as const).map((choice) => <button className={tipChoice === choice ? "active" : ""} key={choice} onClick={() => selectTip(choice)} type="button">{choice === "none" ? "None" : <>{choice}%<small>{formatMoney(Math.round(subtotal * Number(choice) / 100), currency)}</small></>}</button>)}</div><label className="custom-tip">Custom tip<input min="0" onChange={(event) => { setCustomTip(event.target.value); if (tipChoice === "custom") onTipChange(Math.max(0, Math.round(Number(event.target.value || 0) * 100))); }} onFocus={() => selectTip("custom")} step="0.01" type="number" value={customTip} /></label></section>
+    <button className="checkout-pay-button" type="submit" disabled={pending || !user}>{pending ? "Creating your order…" : "Pay now"}</button>{message ? <p className="checkout-message" aria-live="polite">{message}</p> : null}
+  </form>;
 }

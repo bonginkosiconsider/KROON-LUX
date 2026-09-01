@@ -139,6 +139,7 @@ export type Order = {
   subtotalAmount?: number;
   shippingAmount?: number;
   discountAmount?: number;
+  tipAmount?: number;
   totalAmount: number;
   referralCode?: string | null;
   promoterId?: string | null;

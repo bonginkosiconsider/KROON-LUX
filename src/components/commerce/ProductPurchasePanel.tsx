@@ -1,121 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
+import { addFirebaseCartItem } from "@/hooks/use-firebase-cart";
 import { formatMoney } from "@/lib/format";
 import { effectiveVariantPriceInCents, variantAvailableQuantity, variantDescriptor } from "@/lib/firebase-product-adapter";
 import { useStoreSettings } from "@/hooks/use-store-settings";
 
-export type PurchasePanelVariant = {
-  id: string;
-  name: string;
-  priceInCents: number;
-  salePriceCents: number | null;
-  stockQuantity: number;
-  reservedStock: number;
-  stockStatus?: "in-stock" | "out-of-stock" | "on-backorder";
-  manageStock?: boolean;
-  size?: string | null;
-  color?: string | null;
-  imageUrl?: string;
-  attributes?: Record<string, string>;
-};
-
-function variantAttributes(variant: PurchasePanelVariant) {
-  const attributes = { ...(variant.attributes ?? {}) };
-  if (variant.color && !Object.keys(attributes).some((key) => key.toLowerCase() === "color")) attributes.Color = variant.color;
-  if (variant.size && !Object.keys(attributes).some((key) => key.toLowerCase() === "size")) attributes.Size = variant.size;
-  return attributes;
-}
-
-function priceRangeLabel(variants: PurchasePanelVariant[], currency: string) {
-  const prices = variants.map((variant) => effectiveVariantPriceInCents({ priceInCents: variant.priceInCents, salePriceCents: variant.salePriceCents ?? null })).filter(Number.isFinite);
-  if (!prices.length) return formatMoney(0, currency);
-
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  return min === max ? formatMoney(min, currency) : `${formatMoney(min, currency)} - ${formatMoney(max, currency)}`;
-}
+export type PurchasePanelVariant = { id: string; name: string; priceInCents: number; salePriceCents: number | null; stockQuantity: number; reservedStock: number; stockStatus?: "in-stock" | "out-of-stock" | "on-backorder"; manageStock?: boolean; size?: string | null; color?: string | null; imageUrl?: string; attributes?: Record<string, string> };
+function attrs(variant: PurchasePanelVariant) { const values = { ...(variant.attributes ?? {}) }; if (variant.color && !Object.keys(values).some((key) => key.toLowerCase() === "color")) values.Color = variant.color; if (variant.size && !Object.keys(values).some((key) => key.toLowerCase() === "size")) values.Size = variant.size; return values; }
 
 export function ProductPurchasePanel<T extends PurchasePanelVariant>({ variants, onVariantChange }: { variants: T[]; onVariantChange?: (variant: T | null) => void }) {
-  const { currency } = useStoreSettings();
+  const { currency } = useStoreSettings(); const router = useRouter();
   const firstAvailable = variants.find((variant) => variantAvailableQuantity(variant) > 0) ?? variants[0] ?? null;
-  const [selectedId, setSelectedId] = useState(() => variants.length <= 1 ? firstAvailable?.id ?? "" : "");
-  const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({});
-  const selected = useMemo(() => {
-    if (variants.length <= 1) return firstAvailable;
-    return variants.find((variant) => variant.id === selectedId) ?? null;
-  }, [firstAvailable, selectedId, variants]);
-  const available = selected ? variantAvailableQuantity(selected) : 0;
-  const attributeNames = useMemo(() => [...new Set(variants.flatMap((variant) => Object.keys(variantAttributes(variant))))], [variants]);
-  const price = selected ? formatMoney(effectiveVariantPriceInCents(selected), currency) : priceRangeLabel(variants, currency);
-
-  function selectAttribute(name: string, value: string) {
-    const next = { ...attributeSelections, [name]: value };
-    setAttributeSelections(next);
-
-    const isComplete = attributeNames.every((attributeName) => next[attributeName]);
-    const match = isComplete
-      ? variants.find((variant) => {
-          const attributes = variantAttributes(variant);
-          return attributeNames.every((attributeName) => attributes[attributeName] === next[attributeName]);
-        })
-      : null;
-
-    setSelectedId(match?.id ?? "");
-    onVariantChange?.(match ?? null);
-  }
-
-  function selectVariantId(id: string) {
-    const match = variants.find((variant) => variant.id === id) ?? null;
-    setSelectedId(id);
-    setAttributeSelections(match ? variantAttributes(match) : {});
-    onVariantChange?.(match);
-  }
-
-  function optionValues(name: string) {
-    return [...new Set(variants.map((variant) => variantAttributes(variant)[name]).filter(Boolean))];
-  }
-
-  const stockLabel = !selected
-    ? "Choose options for availability"
-    : selected.stockStatus === "on-backorder"
-      ? "Available on backorder"
-      : available > 0
-        ? selected.manageStock === false ? "In stock" : `${available} ready to ship`
-        : "This variation is unavailable";
-
-  return (
-    <div className="purchase-panel">
-      <p className="product-price">{price}</p>
-      {variants.length > 1 && attributeNames.length ? (
-        <div className="variant-options">
-          {attributeNames.map((name) => (
-            <label key={name}>
-              {name}
-              <select value={attributeSelections[name] ?? ""} onChange={(event) => selectAttribute(name, event.target.value)}>
-                <option value="">Choose {name.toLowerCase()}</option>
-                {optionValues(name).map((value) => <option key={`${name}-${value}`} value={value}>{value}</option>)}
-              </select>
-            </label>
-          ))}
-        </div>
-      ) : variants.length > 1 ? (
-        <label>
-          Select your variation
-          <select value={selected?.id ?? ""} onChange={(event) => selectVariantId(event.target.value)} disabled={variants.length === 0}>
-            <option value="">Choose an option</option>
-            {variants.map((variant) => {
-              const quantity = variantAvailableQuantity(variant);
-              return <option key={variant.id} value={variant.id} disabled={quantity <= 0}>{variantDescriptor({ attributes: variant.attributes ?? {}, color: variant.color ?? null, size: variant.size ?? null, name: variant.name })} - {quantity > 0 ? variant.manageStock === false ? "In stock" : `${quantity} available` : "Sold out"}</option>;
-            })}
-          </select>
-        </label>
-      ) : null}
-      <div className="purchase-action">
-        <AddToCartButton variantId={selected?.id ?? null} disabled={!selected || available <= 0} label={!selected ? "Choose options" : available > 0 ? "Add selected piece" : "Sold out"} />
-        <span>{stockLabel}</span>
-      </div>
-    </div>
-  );
+  const [selectedId, setSelectedId] = useState(() => variants.length <= 1 ? firstAvailable?.id ?? "" : ""); const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({}); const [quantity, setQuantity] = useState(1);
+  const selected = useMemo(() => variants.length <= 1 ? firstAvailable : variants.find((variant) => variant.id === selectedId) ?? null, [firstAvailable, selectedId, variants]); const available = selected ? variantAvailableQuantity(selected) : 0;
+  const attributeNames = useMemo(() => [...new Set(variants.flatMap((variant) => Object.keys(attrs(variant))))], [variants]); const priceVariant = selected ?? variants[0] ?? null; const currentPrice = priceVariant ? effectiveVariantPriceInCents(priceVariant) : 0; const originalPrice = priceVariant?.salePriceCents !== null && priceVariant?.salePriceCents !== undefined ? priceVariant.priceInCents : null;
+  function selectAttribute(name: string, value: string) { const next = { ...attributeSelections, [name]: value }; setAttributeSelections(next); const complete = attributeNames.every((key) => next[key]); const match = complete ? variants.find((variant) => attributeNames.every((key) => attrs(variant)[key] === next[key])) ?? null : null; setSelectedId(match?.id ?? ""); onVariantChange?.(match); }
+  function chooseVariant(id: string) { const match = variants.find((variant) => variant.id === id) ?? null; setSelectedId(id); setAttributeSelections(match ? attrs(match) : {}); onVariantChange?.(match); }
+  function optionValues(name: string) { return [...new Set(variants.map((variant) => attrs(variant)[name]).filter(Boolean))]; } function sizeAvailable(name: string, value: string) { return variants.some((variant) => attrs(variant)[name] === value && variantAvailableQuantity(variant) > 0); } function buyNow() { if (!selected || available <= 0) return; addFirebaseCartItem(selected.id, Math.min(quantity, available)); router.push("/checkout"); }
+  return <div className="purchase-panel"><div className="product-price-row">{originalPrice ? <del>{formatMoney(originalPrice, currency)}</del> : null}<p className="product-price">{formatMoney(currentPrice, currency)}</p></div>{variants.length > 1 && attributeNames.length ? <div className="variant-options">{attributeNames.map((name) => <div className="variant-option" key={name}><span>{name}</span>{name.toLowerCase() === "size" ? <div className="size-options">{optionValues(name).map((value) => <button className={attributeSelections[name] === value ? "is-selected" : ""} disabled={!sizeAvailable(name, value)} key={value} onClick={() => selectAttribute(name, value)} type="button">{value}</button>)}</div> : <select value={attributeSelections[name] ?? ""} onChange={(event) => selectAttribute(name, event.target.value)}><option value="">Choose {name.toLowerCase()}</option>{optionValues(name).map((value) => <option key={value} value={value}>{value}</option>)}</select>}</div>)}</div> : variants.length > 1 ? <label className="variant-option">Select your variation<select value={selected?.id ?? ""} onChange={(event) => chooseVariant(event.target.value)}><option value="">Choose an option</option>{variants.map((variant) => <option disabled={variantAvailableQuantity(variant) <= 0} key={variant.id} value={variant.id}>{variantDescriptor({ ...variant, color: variant.color ?? null, size: variant.size ?? null, attributes: variant.attributes ?? {} })}{variantAvailableQuantity(variant) <= 0 ? " — Sold out" : ""}</option>)}</select></label> : null}<div className="quantity-field"><span>Quantity</span><div className="quantity-control"><button aria-label="Decrease quantity" disabled={quantity <= 1} onClick={() => setQuantity((value) => Math.max(1, value - 1))} type="button">−</button><b>{quantity}</b><button aria-label="Increase quantity" disabled={!available || quantity >= available} onClick={() => setQuantity((value) => Math.min(available, value + 1))} type="button">+</button></div></div><div className="purchase-buttons"><AddToCartButton quantity={quantity} variantId={selected?.id ?? null} disabled={!selected || available <= 0} label="Add to cart" /><button className="button button-primary" disabled={!selected || available <= 0} onClick={buyNow} type="button">Buy it now</button></div>{!selected ? <p className="purchase-status">Choose options to continue</p> : available <= 0 ? <p className="purchase-status">This variation is unavailable</p> : null}</div>;
 }

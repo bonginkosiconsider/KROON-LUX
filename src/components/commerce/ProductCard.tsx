@@ -18,9 +18,10 @@ type ProductCardProps = {
     category?: { name: string; slug: string } | null;
     collection?: { name: string; slug: string } | null;
   };
+  recommendation?: boolean;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, recommendation = false }: ProductCardProps) {
   const { currency } = useStoreSettings();
   const variants = product.variants;
   const variant = variants.find((item) => variantAvailableQuantity({ stockQuantity: item.stockQuantity ?? 0, reservedStock: item.reservedStock ?? 0 }) > 0) ?? variants[0];
@@ -30,6 +31,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const priceLabel = minPrice === maxPrice ? formatMoney(minPrice, currency) : `${formatMoney(minPrice, currency)} - ${formatMoney(maxPrice, currency)}`;
   const available = variant ? variantAvailableQuantity({ stockQuantity: variant.stockQuantity ?? 0, reservedStock: variant.reservedStock ?? 0 }) > 0 : false;
   const image = product.images[0];
+  const saleVariant = variants.find((item) => item.salePriceCents !== null && item.salePriceCents !== undefined && item.salePriceCents < item.priceInCents);
+  const regularPrice = saleVariant ? formatMoney(saleVariant.priceInCents, currency) : null;
+  const salePrice = saleVariant ? formatMoney(saleVariant.salePriceCents!, currency) : priceLabel;
+
+  if (recommendation) {
+    return <article className="product-card recommendation-card"><Link className="recommendation-card-link" href={`/products/${product.slug}`} aria-label={`View ${product.name}`}><div className="recommendation-image-wrap">{saleVariant ? <span className="recommendation-sale-badge">Sale</span> : null}{image ? <img className="product-image" src={image.url} alt={image.altText} loading="lazy" decoding="async" /> : <div className="product-image product-image-empty" aria-hidden="true" />}</div><div className="recommendation-card-copy"><h3>{product.name}</h3><p className="recommendation-price">{regularPrice ? <del>{regularPrice}</del> : null}<strong>{salePrice}</strong></p></div></Link></article>;
+  }
 
   return (
     <article className="product-card">

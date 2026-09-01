@@ -20,10 +20,9 @@ import {
 import { createProduct, removeProduct, updateProduct } from "@/services/firebase-products";
 import { uploadProductImage } from "@/services/firebase-storage";
 
-const tabs = ["General", "Inventory", "Shipping", "Attributes", "Variations", "SEO"] as const;
+const tabs = ["General", "Inventory", "Attributes", "Variations", "SEO"] as const;
 type Tab = typeof tabs[number];
 
-type FormDimensions = { length: string; width: string; height: string };
 type FormAttribute = ProductAttribute;
 type FormVariation = {
   id: string;
@@ -36,8 +35,6 @@ type FormVariation = {
   lowStockThreshold: string;
   stockStatus: ProductStockStatus;
   imageUrl: string;
-  weight: string;
-  dimensions: FormDimensions;
   attributes: Record<string, string>;
 };
 
@@ -55,9 +52,6 @@ type ProductFormState = {
   inventoryCount: string;
   lowStockThreshold: string;
   backorders: BackorderPolicy;
-  weight: string;
-  dimensions: FormDimensions;
-  shippingClass: string;
   attributes: FormAttribute[];
   variations: FormVariation[];
   metaTitle: string;
@@ -108,7 +102,11 @@ const visibilityOptions: { value: ProductVisibility; label: string }[] = [
 
 type CatalogView = "list" | "grid";
 
-const blankDimensions: FormDimensions = { length: "", width: "", height: "" };
+type BulkProductValues = {
+  price: string;
+  salePrice: string;
+  inventoryCount: string;
+};
 
 const emptyForm: ProductFormState = {
   title: "",
@@ -124,9 +122,6 @@ const emptyForm: ProductFormState = {
   inventoryCount: "0",
   lowStockThreshold: "5",
   backorders: "not-allowed",
-  weight: "",
-  dimensions: blankDimensions,
-  shippingClass: "",
   attributes: [],
   variations: [],
   metaTitle: "",
@@ -159,14 +154,6 @@ function numberOrUndefined(value: string) {
   if (!value.trim()) return undefined;
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : undefined;
-}
-
-function cleanDimensions(dimensions: FormDimensions) {
-  return {
-    length: numberOrUndefined(dimensions.length),
-    width: numberOrUndefined(dimensions.width),
-    height: numberOrUndefined(dimensions.height),
-  };
 }
 
 function splitValues(values: string) {
@@ -224,12 +211,6 @@ function variationFromProduct(variation: ProductVariation): FormVariation {
     lowStockThreshold: numberText(variation.lowStockThreshold ?? 5),
     stockStatus: variation.stockStatus ?? "in-stock",
     imageUrl: text(variation.imageUrl),
-    weight: numberText(variation.weight),
-    dimensions: {
-      length: numberText(variation.dimensions?.length),
-      width: numberText(variation.dimensions?.width),
-      height: numberText(variation.dimensions?.height),
-    },
     attributes: variation.attributes ?? {},
   };
 }
@@ -238,7 +219,6 @@ function formFromProduct(product: Product | null): ProductFormState {
   if (!product) {
     return {
       ...emptyForm,
-      dimensions: { ...blankDimensions },
       attributes: [],
       variations: [],
       categories: [],
@@ -260,13 +240,6 @@ function formFromProduct(product: Product | null): ProductFormState {
     inventoryCount: numberText(product.inventoryCount),
     lowStockThreshold: numberText(product.lowStockThreshold ?? 5),
     backorders: product.backorders ?? "not-allowed",
-    weight: numberText(product.weight),
-    dimensions: {
-      length: numberText(product.dimensions?.length),
-      width: numberText(product.dimensions?.width),
-      height: numberText(product.dimensions?.height),
-    },
-    shippingClass: text(product.shippingClass),
     attributes: (product.attributes ?? []).map((attribute) => ({ ...attribute })),
     variations: (product.variations ?? []).map(variationFromProduct),
     metaTitle: text(product.metaTitle),
@@ -299,8 +272,6 @@ function variationPayload(variation: FormVariation, parentPrice: string): Produc
     lowStockThreshold: numberOrZero(variation.lowStockThreshold || "5"),
     stockStatus: variation.stockStatus,
     imageUrl: variation.imageUrl.trim() || undefined,
-    weight: numberOrUndefined(variation.weight),
-    dimensions: cleanDimensions(variation.dimensions),
     attributes,
   };
 }
@@ -363,6 +334,8 @@ export function AdminProductsClient() {
   const [catalogBusy, setCatalogBusy] = useState(false);
   const [catalogView, setCatalogView] = useState<CatalogView>("list");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkEditorOpen, setBulkEditorOpen] = useState(false);
+  const [bulkValues, setBulkValues] = useState<Record<string, BulkProductValues>>({});
 
   const matrixCount = useMemo(() => variationMatrix(form.attributes).length, [form.attributes]);
   const seoTitle = form.metaTitle.trim() || form.title.trim() || "Product title";
@@ -389,9 +362,6 @@ export function AdminProductsClient() {
       stockStatus: form.stockStatus,
       lowStockThreshold: numberOrZero(form.lowStockThreshold || "5"),
       backorders: form.backorders,
-      weight: numberOrUndefined(form.weight),
-      dimensions: cleanDimensions(form.dimensions),
-      shippingClass: form.shippingClass,
       attributes: cleanAttributes(form.attributes),
       variations: previewVariations,
       metaTitle: form.metaTitle,
@@ -461,13 +431,6 @@ export function AdminProductsClient() {
     }));
   }
 
-  function updateVariationDimension(index: number, key: keyof FormDimensions, value: string) {
-    setForm((current) => ({
-      ...current,
-      variations: current.variations.map((variation, itemIndex) => itemIndex === index ? { ...variation, dimensions: { ...variation.dimensions, [key]: value } } : variation),
-    }));
-  }
-
   function removeVariation(index: number) {
     setForm((current) => ({ ...current, variations: current.variations.filter((_, itemIndex) => itemIndex !== index) }));
   }
@@ -489,8 +452,6 @@ export function AdminProductsClient() {
           lowStockThreshold: current.lowStockThreshold || "5",
           stockStatus: "out-of-stock",
           imageUrl: "",
-          weight: current.weight,
-          dimensions: { ...current.dimensions },
           attributes: {},
         },
       ],
@@ -525,8 +486,6 @@ export function AdminProductsClient() {
             lowStockThreshold: current.lowStockThreshold || "5",
             stockStatus: "out-of-stock",
             imageUrl: "",
-            weight: current.weight,
-            dimensions: { ...current.dimensions },
             attributes,
           };
         }),
@@ -579,6 +538,23 @@ export function AdminProductsClient() {
 
   function toggleAll() {
     setSelectedIds(allSelected ? [] : products.map((product) => product.id));
+  }
+
+  function openBulkEditor() {
+    setBulkValues(Object.fromEntries(selectedProducts.map((product) => [product.id, {
+      price: numberText(product.price),
+      salePrice: numberText(product.salePrice),
+      inventoryCount: numberText(product.inventoryCount),
+    }])));
+    setBulkEditorOpen(true);
+    setMessage("");
+  }
+
+  function updateBulkValue(id: string, field: keyof BulkProductValues, value: string) {
+    setBulkValues((current) => ({
+      ...current,
+      [id]: { ...current[id], [field]: value },
+    }));
   }
 
   async function withCatalogAction(action: () => Promise<void>) {
@@ -634,6 +610,41 @@ export function AdminProductsClient() {
       }
       setSelectedIds([]);
       setMessage(`${selectedProducts.length} product${selectedProducts.length === 1 ? "" : "s"} moved to ${label.toLowerCase()}.`);
+    } catch (error) {
+      setMessage(`Products could not be updated. ${friendlySaveError(error)}`);
+    }
+  }
+
+  async function saveBulkEdits() {
+    if (!selectedProducts.length) return;
+
+    const invalidProduct = selectedProducts.find((product) => {
+      const values = bulkValues[product.id];
+      const price = Number(values?.price);
+      const quantity = Number(values?.inventoryCount);
+      const salePrice = values?.salePrice.trim() ?? "";
+      const salePriceNumber = Number(salePrice);
+      return !values || !values.price.trim() || !Number.isFinite(price) || !Number.isInteger(quantity) || price < 0 || quantity < 0 || (Boolean(salePrice) && (!Number.isFinite(salePriceNumber) || salePriceNumber < 0));
+    });
+    if (invalidProduct) {
+      setMessage("Each selected product needs a regular price and a quantity of zero or more.");
+      return;
+    }
+
+    try {
+      await withCatalogAction(async () => {
+        await Promise.all(selectedProducts.map((product) => {
+          const values = bulkValues[product.id];
+          return updateProduct(product.id, {
+            price: numberOrZero(values.price),
+            salePrice: numberOrUndefined(values.salePrice),
+            inventoryCount: numberOrZero(values.inventoryCount),
+            manageStock: true,
+          });
+        }));
+      });
+      setBulkEditorOpen(false);
+      setMessage(`${selectedProducts.length} product${selectedProducts.length === 1 ? "" : "s"} updated.`);
     } catch (error) {
       setMessage(`Products could not be updated. ${friendlySaveError(error)}`);
     }
@@ -698,9 +709,6 @@ export function AdminProductsClient() {
         inventoryCount: numberOrZero(form.inventoryCount),
         lowStockThreshold: numberOrZero(form.lowStockThreshold || "5"),
         backorders: form.backorders,
-        weight: numberOrUndefined(form.weight),
-        dimensions: cleanDimensions(form.dimensions),
-        shippingClass: form.shippingClass,
         attributes: cleanAttributes(form.attributes),
         variations: cleanedVariations,
         metaTitle: form.metaTitle,
@@ -846,36 +854,6 @@ export function AdminProductsClient() {
               </>
             ) : null}
 
-            {tab === "Shipping" ? (
-              <div className="form-grid">
-                <label>
-                  Weight (kg)
-                  <input value={form.weight} onChange={(event) => setForm((current) => ({ ...current, weight: event.target.value }))} type="number" min="0" step="0.01" />
-                </label>
-                <label>
-                  Shipping class
-                  <select value={form.shippingClass} onChange={(event) => setForm((current) => ({ ...current, shippingClass: event.target.value }))}>
-                    <option value="">No shipping class</option>
-                    <option value="Standard">Standard</option>
-                    <option value="Oversized">Oversized</option>
-                    <option value="Fragile">Fragile</option>
-                  </select>
-                </label>
-                <label>
-                  Length (cm)
-                  <input value={form.dimensions.length} onChange={(event) => setForm((current) => ({ ...current, dimensions: { ...current.dimensions, length: event.target.value } }))} type="number" min="0" />
-                </label>
-                <label>
-                  Width (cm)
-                  <input value={form.dimensions.width} onChange={(event) => setForm((current) => ({ ...current, dimensions: { ...current.dimensions, width: event.target.value } }))} type="number" min="0" />
-                </label>
-                <label>
-                  Height (cm)
-                  <input value={form.dimensions.height} onChange={(event) => setForm((current) => ({ ...current, dimensions: { ...current.dimensions, height: event.target.value } }))} type="number" min="0" />
-                </label>
-              </div>
-            ) : null}
-
             {tab === "Attributes" ? (
               <div className="attribute-editor">
                 <div className="editor-toolbar">
@@ -905,75 +883,25 @@ export function AdminProductsClient() {
                   <button type="button" className="button button-secondary" onClick={addManualVariation}>Add variation</button>
                 </div>
                 {form.productType !== "variable" ? <p className="empty-catalog">Set Product type to Variable before publishing variation rows.</p> : null}
-                {form.variations.length ? form.variations.map((variation, index) => (
-                  <div className="variation-row-detailed" key={variation.id}>
-                    <div className="variation-row-heading">
-                      <strong>{variation.name || variationName(variation.attributes) || `Variation ${index + 1}`}</strong>
-                      <button type="button" className="text-button danger" onClick={() => removeVariation(index)}>Remove</button>
-                    </div>
-                    {Object.keys(variation.attributes).length ? (
-                      <div className="variation-attributes">
-                        {Object.entries(variation.attributes).map(([name, value]) => <span key={`${variation.id}-${name}`}>{name}: {value}</span>)}
+                {form.variations.length ? (
+                  <div className="variation-table-scroll">
+                    <div className="variation-table">
+                      <div className="variation-table-row variation-table-head">
+                        <span>Title</span><span>Regular price (R)</span><span>Sale price (R)</span><span>SKU</span><span>On hand</span><span aria-label="Actions" />
                       </div>
-                    ) : null}
-                    <div className="form-grid variation-grid">
-                      <label>
-                        Variation name
-                        <input value={variation.name} onChange={(event) => updateVariation(index, { name: event.target.value })} />
-                      </label>
-                      <label>
-                        SKU
-                        <input value={variation.sku} onChange={(event) => updateVariation(index, { sku: event.target.value })} placeholder="Auto-generated if blank" />
-                      </label>
-                      <label>
-                        Regular price (R)
-                        <input value={variation.price} onChange={(event) => updateVariation(index, { price: event.target.value })} type="number" min="0" step="0.01" />
-                      </label>
-                      <label>
-                        Sale price (R)
-                        <input value={variation.salePrice} onChange={(event) => updateVariation(index, { salePrice: event.target.value })} type="number" min="0" step="0.01" />
-                      </label>
-                      <label className="toggle-line">
-                        <input type="checkbox" checked={variation.manageStock} onChange={(event) => updateVariation(index, { manageStock: event.target.checked })} />
-                        Track variation stock?
-                      </label>
-                      <label>
-                        Stock quantity
-                        <input value={variation.inventoryCount} onChange={(event) => updateVariation(index, { inventoryCount: event.target.value })} type="number" min="0" disabled={!variation.manageStock} />
-                      </label>
-                      <label>
-                        Low stock threshold
-                        <input value={variation.lowStockThreshold} onChange={(event) => updateVariation(index, { lowStockThreshold: event.target.value })} type="number" min="0" disabled={!variation.manageStock} />
-                      </label>
-                      <label>
-                        Stock status
-                        <select value={variation.stockStatus} onChange={(event) => updateVariation(index, { stockStatus: event.target.value as ProductStockStatus })}>
-                          {stockStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                        </select>
-                      </label>
-                      <label className="wide-field">
-                        Variation image URL
-                        <input value={variation.imageUrl} onChange={(event) => updateVariation(index, { imageUrl: event.target.value })} type="url" />
-                      </label>
-                      <label>
-                        Weight (kg)
-                        <input value={variation.weight} onChange={(event) => updateVariation(index, { weight: event.target.value })} type="number" min="0" step="0.01" />
-                      </label>
-                      <label>
-                        Length (cm)
-                        <input value={variation.dimensions.length} onChange={(event) => updateVariationDimension(index, "length", event.target.value)} type="number" min="0" />
-                      </label>
-                      <label>
-                        Width (cm)
-                        <input value={variation.dimensions.width} onChange={(event) => updateVariationDimension(index, "width", event.target.value)} type="number" min="0" />
-                      </label>
-                      <label>
-                        Height (cm)
-                        <input value={variation.dimensions.height} onChange={(event) => updateVariationDimension(index, "height", event.target.value)} type="number" min="0" />
-                      </label>
+                      {form.variations.map((variation, index) => (
+                        <div className="variation-table-row" key={variation.id}>
+                          <input aria-label={`Variation ${index + 1} title`} value={variation.name} onChange={(event) => updateVariation(index, { name: event.target.value })} placeholder={variationName(variation.attributes) || `Variation ${index + 1}`} />
+                          <input aria-label={`${variation.name || `Variation ${index + 1}`} regular price`} value={variation.price} onChange={(event) => updateVariation(index, { price: event.target.value })} type="number" min="0" step="0.01" />
+                          <input aria-label={`${variation.name || `Variation ${index + 1}`} sale price`} value={variation.salePrice} onChange={(event) => updateVariation(index, { salePrice: event.target.value })} type="number" min="0" step="0.01" />
+                          <input aria-label={`${variation.name || `Variation ${index + 1}`} SKU`} value={variation.sku} onChange={(event) => updateVariation(index, { sku: event.target.value })} placeholder="Auto-generated" />
+                          <input aria-label={`${variation.name || `Variation ${index + 1}`} quantity on hand`} value={variation.inventoryCount} onChange={(event) => updateVariation(index, { inventoryCount: event.target.value, manageStock: true })} type="number" min="0" step="1" />
+                          <button type="button" className="text-button danger" onClick={() => removeVariation(index)}>Remove</button>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                )) : <p className="empty-catalog">No variations yet.</p>}
+                ) : <p className="empty-catalog">No variations yet.</p>}
               </div>
             ) : null}
 
@@ -1104,6 +1032,9 @@ export function AdminProductsClient() {
           <div className="admin-bulk-actions">
             {selectedProducts.length ? (
               <>
+                <button className="button button-primary" disabled={catalogBusy} type="button" onClick={openBulkEditor}>
+                  Bulk edit selected
+                </button>
                 <button className="button button-secondary" disabled={catalogBusy} type="button" onClick={() => bulkUpdateStatus("draft")}>
                   Draft selected
                 </button>
@@ -1124,6 +1055,42 @@ export function AdminProductsClient() {
             )}
           </div>
         </div>
+
+        {bulkEditorOpen ? (
+          <section aria-label="Bulk product editor" className="bulk-product-editor">
+            <div className="bulk-product-editor-heading">
+              <div>
+                <h3>Bulk edit products</h3>
+                <p>Update quantity, sale price, and regular price for each selected product, then save them together.</p>
+              </div>
+              <button className="text-button" disabled={catalogBusy} onClick={() => setBulkEditorOpen(false)} type="button">Close</button>
+            </div>
+            <p className="bulk-product-editor-note">Saving quantity turns on inventory tracking. For variable products, these are the product-level values; edit variations separately for variation-specific stock and prices.</p>
+            <div className="bulk-product-editor-scroll">
+              <div className="bulk-product-editor-row bulk-product-editor-head">
+                <span>Product</span>
+                <span>Quantity</span>
+                <span>Sale price (R)</span>
+                <span>Regular price (R)</span>
+              </div>
+              {selectedProducts.map((product) => {
+                const values = bulkValues[product.id];
+                return (
+                  <div className="bulk-product-editor-row" key={product.id}>
+                    <strong>{product.title}</strong>
+                    <input aria-label={`${product.title} quantity`} disabled={catalogBusy} min="0" onChange={(event) => updateBulkValue(product.id, "inventoryCount", event.target.value)} step="1" type="number" value={values?.inventoryCount ?? ""} />
+                    <input aria-label={`${product.title} sale price`} disabled={catalogBusy} min="0" onChange={(event) => updateBulkValue(product.id, "salePrice", event.target.value)} step="0.01" type="number" value={values?.salePrice ?? ""} />
+                    <input aria-label={`${product.title} regular price`} disabled={catalogBusy} min="0" onChange={(event) => updateBulkValue(product.id, "price", event.target.value)} required step="0.01" type="number" value={values?.price ?? ""} />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="bulk-product-editor-actions">
+              <button className="button button-primary" disabled={catalogBusy} onClick={saveBulkEdits} type="button">{catalogBusy ? "Saving…" : "Save all changes"}</button>
+              <button className="button button-secondary" disabled={catalogBusy} onClick={() => setBulkEditorOpen(false)} type="button">Cancel</button>
+            </div>
+          </section>
+        ) : null}
 
         {catalogView === "list" ? (
           <div className="admin-table">

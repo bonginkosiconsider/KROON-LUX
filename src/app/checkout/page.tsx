@@ -1,7 +1,6 @@
 import { FirebaseCheckoutClient } from "@/components/firebase/FirebaseCheckoutClient";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { SiteHeader } from "@/components/site/SiteHeader";
+import { CheckoutHeader } from "@/components/site/CheckoutHeader";
 
 export default function CheckoutPage() {
-  return <><SiteHeader /><FirebaseCheckoutClient /><SiteFooter /></>;
+  return <><CheckoutHeader /><FirebaseCheckoutClient /></>;
 }
