@@ -1,14 +1,15 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/commerce/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import { useStoreTaxonomy } from "@/hooks/use-store-taxonomies";
 
-const presetCollections: Record<string, { title: string; description: string }> = {
-  "new-arrivals": { title: "New arrivals", description: "The latest pieces to join the Kroon Luxe collection." },
-  accessories: { title: "Accessories", description: "Finishing pieces selected for everyday distinction." },
-  sale: { title: "Sale", description: "Considered pieces, offered for a limited time." },
-  "soccer-jerseys": { title: "Soccer jerseys", description: "Support your colours in standout style." },
+const presetCollections: Record<string, { title: string }> = {
+  "new-arrivals": { title: "New arrivals" },
+  accessories: { title: "Accessories" },
+  sale: { title: "Sale" },
+  "soccer-jerseys": { title: "Soccer jerseys" },
 };
 
 function cardProduct(product: ReturnType<typeof useProducts>["products"][number]) {
@@ -16,13 +17,14 @@ function cardProduct(product: ReturnType<typeof useProducts>["products"][number]
 }
 
 export function CollectionPageClient({ slug }: { slug: string }) {
+  const [availability, setAvailability] = useState("all");
+  const [sort, setSort] = useState("featured");
   const { products, loading: productsLoading } = useProducts();
   const { item: brand, loading: brandsLoading } = useStoreTaxonomy("brands", slug);
   const { item: collection, loading: collectionsLoading } = useStoreTaxonomy("collections", slug);
   const preset = presetCollections[slug];
   const taxonomy = brand ?? collection;
   const title = taxonomy?.name ?? preset?.title ?? "Collection";
-  const description = taxonomy?.description || preset?.description || "Browse the latest Kroon Luxe collection.";
   const normalized = slug.replace(/-/g, " ");
   const visible = products.filter((product) => {
     if (brand) return product.brandId === brand.id;
@@ -32,5 +34,9 @@ export function CollectionPageClient({ slug }: { slug: string }) {
     return [product.category, ...(product.categories ?? []), ...(product.tags ?? [])].some((value) => value.toLowerCase() === normalized);
   });
   const loading = productsLoading || brandsLoading || collectionsLoading;
-  return <main className="page-shell"><section className="collection-hero"><p className="eyebrow gold">{brand ? "Brand" : "Collection"}</p><h1>{title}</h1><p>{description}</p></section><section className="collection-results"><p className="eyebrow">{loading ? "Loading…" : `${visible.length} pieces`}</p><div className="product-grid shop-grid">{visible.map((product) => <ProductCard key={product.id} product={cardProduct(product)} />)}</div>{!loading && !visible.length ? <div className="empty-state"><h2>Nothing in this collection yet.</h2><p>Products assigned by the store team will appear here automatically.</p></div> : null}</section></main>;
+  const displayed = useMemo(() => {
+    const filtered = availability === "in-stock" ? visible.filter((product) => product.inventoryCount > 0) : availability === "sale" ? visible.filter((product) => product.salePrice !== undefined && product.salePrice < product.price) : visible;
+    return [...filtered].sort((a, b) => sort === "price-asc" ? (a.salePrice ?? a.price) - (b.salePrice ?? b.price) : sort === "price-desc" ? (b.salePrice ?? b.price) - (a.salePrice ?? a.price) : 0);
+  }, [availability, sort, visible]);
+  return <main className="page-shell"><section className="collection-hero"><h1>{title}</h1></section><section className="collection-results"><div className="collection-toolbar"><div className="collection-filters"><span>Filter:</span><label>Availability<select aria-label="Filter by availability" value={availability} onChange={(event) => setAvailability(event.target.value)}><option value="all">All</option><option value="in-stock">In stock</option><option value="sale">On sale</option></select></label><label>Price<select aria-label="Filter by price" value={sort === "price-desc" ? "price-desc" : "all"} onChange={(event) => setSort(event.target.value === "price-desc" ? "price-desc" : "featured")}><option value="all">All</option><option value="price-desc">High to low</option></select></label></div><label className="collection-sort">Sort by:<select aria-label="Sort products" value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Featured</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></label><span className="collection-count">{loading ? "Loading…" : `${displayed.length} products`}</span></div><div className="product-grid shop-grid">{displayed.map((product) => <ProductCard key={product.id} product={cardProduct(product)} />)}</div>{!loading && !displayed.length ? <div className="empty-state"><h2>Nothing in this collection yet.</h2><p>Products assigned by the store team will appear here automatically.</p></div> : null}</section></main>;
 }

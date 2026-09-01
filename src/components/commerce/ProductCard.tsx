@@ -42,6 +42,7 @@ export function ProductCard({ product, recommendation = false }: ProductCardProp
   return (
     <article className="product-card">
       <Link className="product-image-link" href={`/products/${product.slug}`} aria-label={`View ${product.name}`}>
+        {saleVariant ? <span className="product-sale-badge">Sale</span> : null}
         {image ? (
           <img className="product-image" src={image.url} alt={image.altText} loading="lazy" decoding="async" />
         ) : (
@@ -57,7 +58,7 @@ export function ProductCard({ product, recommendation = false }: ProductCardProp
           {product.shortDescription ? <p>{product.shortDescription}</p> : null}
         </div>
         <div className="product-card-actions">
-          <span className="price">{priceLabel}</span>
+          <span className="price">{saleVariant ? <><del>{regularPrice}</del><strong>{salePrice}</strong></> : priceLabel}</span>
           {variants.length > 1 ? (
             <Link className="button button-dark" href={`/products/${product.slug}`}>Options</Link>
           ) : (
