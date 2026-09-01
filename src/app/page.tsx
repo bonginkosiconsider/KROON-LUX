@@ -93,21 +93,6 @@ export default function Home() {
         <BrandsLineup />
         <ServiceBenefits />
         <TestimonialCarousel />
-
-        <section className="newsletter section" id="newsletter">
-          <div>
-            <p className="eyebrow">Private access</p>
-            <h2>Stay in the know.</h2>
-          </div>
-          <form>
-            <label htmlFor="email">Your email address</label>
-            <div className="email-row">
-              <input id="email" type="email" placeholder="you@example.com" />
-              <button type="submit">Join</button>
-            </div>
-            <p className="fine-print">By joining, you agree to receive considered correspondence from Kroon Luxe.</p>
-          </form>
-        </section>
       </main>
       <SiteFooter />
     </>

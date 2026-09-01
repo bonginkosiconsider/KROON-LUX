@@ -10,7 +10,11 @@ export type StoreSettings = {
   currency: string;
   announcement: string;
   heroSlides: HeroSlide[];
+  socialLinks: SocialLink[];
 };
+
+export type SocialPlatform = "whatsapp" | "tiktok" | "facebook" | "instagram";
+export type SocialLink = { platform: SocialPlatform; url: string; enabled: boolean };
 
 export type HeroSlide = {
   imageUrl: string;
@@ -36,6 +40,13 @@ const defaultHeroSlides: HeroSlide[] = [
   },
 ];
 
+export const defaultSocialLinks: SocialLink[] = [
+  { platform: "whatsapp", url: "", enabled: false },
+  { platform: "tiktok", url: "", enabled: false },
+  { platform: "facebook", url: "", enabled: false },
+  { platform: "instagram", url: "", enabled: false },
+];
+
 export const defaultStoreSettings: StoreSettings = {
   storeName: "KROON LUXE",
   contactEmail: "",
@@ -43,6 +54,7 @@ export const defaultStoreSettings: StoreSettings = {
   currency: "ZAR",
   announcement: "",
   heroSlides: defaultHeroSlides,
+  socialLinks: defaultSocialLinks,
 };
 
 const settingsRef = doc(db, "settings", "store");
@@ -53,8 +65,11 @@ export function subscribeStoreSettings(callback: (settings: StoreSettings) => vo
     const heroSlides = Array.isArray(data?.heroSlides)
       ? defaultHeroSlides.map((fallback, index) => ({ ...fallback, ...data.heroSlides?.[index] }))
       : defaultHeroSlides;
+    const socialLinks = Array.isArray(data?.socialLinks)
+      ? defaultSocialLinks.map((fallback) => ({ ...fallback, ...data.socialLinks?.find((link) => link?.platform === fallback.platform) }))
+      : defaultSocialLinks;
 
-    callback({ ...defaultStoreSettings, ...data, heroSlides });
+    callback({ ...defaultStoreSettings, ...data, heroSlides, socialLinks });
   });
 }
 

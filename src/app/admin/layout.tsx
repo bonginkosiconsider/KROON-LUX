@@ -14,6 +14,7 @@ const navigation = [
   ["/admin/brands", "Brands"],
   ["/admin/collections", "Collections"],
   ["/admin/testimonials", "Testimonials"],
+  ["/admin/pages", "Pages & Policies"],
   ["/admin/promoters", "Promoters"],
   ["/admin/shipping-zones", "Shipping Zones"],
   ["/admin/tax-rates", "Tax Rates"],
@@ -23,6 +24,7 @@ const navigation = [
   ["/admin/payouts", "Payouts"],
   ["/admin/my-store", "My Store"],
   ["/admin/settings", "Settings"],
+  ["/admin/socials", "Follow Us On"],
 ] as const;
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

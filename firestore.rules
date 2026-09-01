@@ -95,5 +95,10 @@ service cloud.firestore {
     match /brands/{brandId} { allow read: if true; allow write: if isAdmin(); }
     match /collections/{collectionId} { allow read: if true; allow write: if isAdmin(); }
     match /testimonials/{testimonialId} { allow read: if true; allow write: if isAdmin(); }
+    match /pages/{pageId} { allow read: if resource.data.status == 'published' || isAdmin(); allow write: if isAdmin(); }
+    match /newsletterSubscribers/{subscriberId} {
+      allow create: if request.resource.data.email is string && request.resource.data.email.size() <= 320;
+      allow read, update, delete: if isAdmin();
+    }
   }
 }

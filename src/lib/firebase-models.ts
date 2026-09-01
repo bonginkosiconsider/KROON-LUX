@@ -89,6 +89,25 @@ export type Testimonial = {
   updatedAt: FirestoreTimestamp;
 };
 
+export type ManagedPageStatus = "draft" | "published";
+export type ManagedPageSection = "policies" | "pages";
+
+export type ManagedPage = {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  status: ManagedPageStatus;
+  section: ManagedPageSection;
+  showInFooter: boolean;
+  sortOrder: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
+  publishedAt?: FirestoreTimestamp;
+};
+
 export type OrderItem = {
   productId: string;
   title: string;
