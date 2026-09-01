@@ -186,20 +186,31 @@ function mapProduct(id: string, value: Record<string, unknown>): Product {
   };
 }
 
-export function subscribeProducts(callback: (products: Product[]) => void, publishedOnly = true): Unsubscribe {
-  const source = query(products, orderBy("createdAt", "desc"));
+export function subscribeProducts(callback: (products: Product[]) => void, publishedOnly = true, onError?: (error: Error) => void): Unsubscribe {
+  const source = publishedOnly ? query(products, where("isPublished", "==", true)) : query(products, orderBy("createdAt", "desc"));
   return onSnapshot(source, (snapshot) => {
-    const items = snapshot.docs.map((item) => mapProduct(item.id, item.data()));
+    const items = snapshot.docs.map((item) => mapProduct(item.id, item.data())).sort(newestFirst);
     callback(publishedOnly ? items.filter((product) => product.isPublished) : items);
-  });
+  }, onError);
 }
 
-export function subscribeProduct(slug: string, callback: (product: Product | null) => void): Unsubscribe {
+export function subscribeProduct(slug: string, callback: (product: Product | null) => void, onError?: (error: Error) => void): Unsubscribe {
+  // Query by slug alone to avoid requiring a composite Firestore index, then
+  // enforce storefront visibility in application code.
   return onSnapshot(query(products, where("slug", "==", slug)), (snapshot) => {
     const item = snapshot.docs[0];
     const product = item ? mapProduct(item.id, item.data()) : null;
     callback(product?.isPublished ? product : null);
-  });
+  }, onError);
+}
+
+function createdAtMillis(product: Product) {
+  const value = product.createdAt;
+  return value && typeof value.toMillis === "function" ? value.toMillis() : 0;
+}
+
+function newestFirst(first: Product, second: Product) {
+  return createdAtMillis(second) - createdAtMillis(first);
 }
 
 function randomCode() {
@@ -270,6 +281,7 @@ function prepareProductInput(input: ProductInput, productId: string): ProductInp
   const backorders = asBackorders(input.backorders);
   const sku = normalizeSku(input.sku) || generateSku(category);
   const productType = asProductType(input.productType);
+  const status = asProductStatus(input.status, input.isPublished);
   const variations = productType === "variable"
     ? (input.variations ?? []).map((variation, index) => prepareVariation(variation, index, productId, sku, price, lowStockThreshold))
     : [];
@@ -299,12 +311,12 @@ function prepareProductInput(input: ProductInput, productId: string): ProductInp
     categories,
     category: categories[0] ?? category,
     tags: (input.tags ?? []).map((tag) => tag.trim()).filter(Boolean),
-    status: asProductStatus(input.status, input.isPublished),
+    status,
     visibility: asVisibility(input.visibility),
     brandId: input.brandId?.trim() ?? "",
     brandName: input.brandName?.trim() ?? "",
     collectionIds: (input.collectionIds ?? []).map((item) => item.trim()).filter(Boolean),
-    isPublished: input.status === "published",
+    isPublished: status === "published",
     featured: input.featured === true,
     imageUrls: input.imageUrls ?? [],
   };

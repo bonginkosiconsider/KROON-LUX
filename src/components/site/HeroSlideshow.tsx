@@ -40,6 +40,13 @@ export function HeroSlideshow() {
         ))}
       </div>
 
+      <div className={styles.overlay}>
+        <p className={styles.eyebrow}>Kroon Luxe / 2026 edit</p>
+        <h1>Quietly distinct.</h1>
+        <p className={styles.intro}>Curated streetwear and modern essentials for the considered wardrobe.</p>
+        <a className={styles.cta} href="/shop">Shop the collection</a>
+      </div>
+
       {slides.length > 1 ? (
         <div className={styles.dots} aria-label="Hero slideshow navigation">
           {slides.map((slide, index) => (

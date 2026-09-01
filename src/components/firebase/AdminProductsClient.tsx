@@ -133,7 +133,9 @@ const emptyForm: ProductFormState = {
   metaDescription: "",
   categories: [],
   tags: "",
-  status: "draft",
+  // New products should be available in the storefront after saving. Admins can
+  // still choose Draft (or another status) before publishing when needed.
+  status: "published",
   visibility: "shop-and-search",
   brandId: "",
   collectionIds: [],

@@ -1,0 +1,16 @@
+import { getApps, initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+
+/** A server-side Firestore client for webhook writes. Public create/update rules
+ * intentionally allow this unauthenticated client to append inbound messages;
+ * admin reads remain protected by firestore.rules. */
+const app = getApps().length ? getApps()[0] : initializeApp({
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+});
+
+export const serverDb = getFirestore(app);
