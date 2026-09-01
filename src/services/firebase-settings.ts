@@ -121,7 +121,7 @@ export function subscribeStoreSettings(callback: (settings: StoreSettings) => vo
       ? defaultSocialLinks.map((fallback) => ({ ...fallback, ...data.socialLinks?.find((link) => link?.platform === fallback.platform) }))
       : defaultSocialLinks;
     const featuredProductIds = Array.isArray(data?.featuredProductIds)
-      ? [...new Set(data.featuredProductIds.filter((id): id is string => typeof id === "string" && id.trim()).map((id) => id.trim()))]
+      ? [...new Set(data.featuredProductIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0).map((id) => id.trim()))]
       : [];
 
     callback({ ...defaultStoreSettings, ...data, heroSlides, heroAutoplaySeconds: Math.min(15, Math.max(3, Number(data?.heroAutoplaySeconds) || 6)), featuredProductIds, socialLinks });

@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { HeroSlideshow } from "@/components/site/HeroSlideshow";
 import { ServiceBenefits } from "@/components/site/ServiceBenefits";
 import { TestimonialCarousel } from "@/components/site/TestimonialCarousel";
-import { FirebaseCategoryGrid, FirebaseProductGrid } from "@/components/firebase/StorefrontCatalog";
+import { FirebaseCategoryGrid, FirebaseHomePicks } from "@/components/firebase/StorefrontCatalog";
 import { BrandsLineup } from "@/components/firebase/BrandsLineup";
 import { ReferralCapture } from "@/components/firebase/ReferralCapture";
 
@@ -20,13 +20,13 @@ export default function Home() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">Featured collection</p>
-              <h2>Quietly distinct.</h2>
+              <h2>KROON LUXE PICKS</h2>
             </div>
             <a className="text-link" href="/shop">
               View all pieces
             </a>
           </div>
-          <FirebaseProductGrid sort="featured" />
+          <FirebaseHomePicks />
         </section>
 
         {facets.categories.length > 0 ? (

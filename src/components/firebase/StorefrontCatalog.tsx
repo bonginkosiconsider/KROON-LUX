@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/commerce/ProductCard";
 import { ReferralCapture } from "@/components/firebase/ReferralCapture";
 import { useProducts } from "@/hooks/use-products";
 import { firebaseProductCard } from "@/lib/firebase-product-adapter";
 import { slugify, type Product } from "@/lib/firebase-models";
+import { formatMoney } from "@/lib/format";
+import { defaultStoreSettings, subscribeStoreSettings } from "@/services/firebase-settings";
 
 function productMatchesSearch(product: Product, value: string) {
   const term = value.trim().toLowerCase();
@@ -53,6 +56,27 @@ export function FirebaseProductGrid({ sort }: { sort: HomeCatalogSort }) {
       )}
     </div>
   );
+}
+
+export function FirebaseHomePicks() {
+  const { products, loading } = useProducts();
+  const [settings, setSettings] = useState(defaultStoreSettings);
+  useEffect(() => subscribeStoreSettings(setSettings), []);
+  const picks = useMemo(() => {
+    const productsById = new Map(products.map((product) => [product.id, product]));
+    return settings.featuredProductIds.flatMap((id) => {
+      const product = productsById.get(id);
+      return product ? [product] : [];
+    });
+  }, [products, settings.featuredProductIds]);
+
+  if (loading) return <div className="home-picks-grid"><p className="empty-catalog">Loading Kroon Luxe Picks...</p></div>;
+  return <div className="home-picks-grid">{picks.length ? picks.map((product) => <HomePickCard key={product.id} product={product} />) : <p className="empty-catalog">Kroon Luxe Picks are being curated.</p>}</div>;
+}
+
+function HomePickCard({ product }: { product: Product }) {
+  const onSale = product.salePrice !== undefined && product.salePrice < product.price;
+  return <article className="home-pick-card"><Link aria-label={`View ${product.title}`} className="home-pick-image" href={`/products/${product.slug}`}>{onSale ? <span>Sale</span> : null}{product.imageUrls[0] ? <img alt={product.title} src={product.imageUrls[0]} /> : <div aria-hidden="true" />}</Link><div className="home-pick-copy"><h3><Link href={`/products/${product.slug}`}>{product.title}</Link></h3><p>{onSale ? <><del>{formatMoney(product.price * 100)}</del><strong>{formatMoney(product.salePrice! * 100)}</strong></> : <strong>{formatMoney(product.price * 100)}</strong>}</p></div></article>;
 }
 
 export function FirebaseCategoryGrid() {
