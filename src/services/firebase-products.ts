@@ -195,18 +195,12 @@ export function subscribeProducts(callback: (products: Product[]) => void, publi
 }
 
 export function subscribeProduct(slug: string, callback: (product: Product | null) => void, onError?: (error: Error) => void): Unsubscribe {
-<<<<<<< Updated upstream
   // Query by slug alone to avoid requiring a composite Firestore index, then
   // enforce storefront visibility in application code.
   return onSnapshot(query(products, where("slug", "==", slug)), (snapshot) => {
     const item = snapshot.docs[0];
     const product = item ? mapProduct(item.id, item.data()) : null;
     callback(product?.isPublished ? product : null);
-=======
-  return onSnapshot(query(products, where("slug", "==", slug), where("isPublished", "==", true)), (snapshot) => {
-    const item = snapshot.docs[0];
-    callback(item ? mapProduct(item.id, item.data()) : null);
->>>>>>> Stashed changes
   }, onError);
 }
 
