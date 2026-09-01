@@ -832,6 +832,28 @@ a:focus-visible {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.product-gallery-main {
+  background: var(--bone);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.product-gallery-main img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+  width: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-gallery-main:hover img {
+    transform: scale(1.02);
+  }
+}
+
 .product-summary {
   position: sticky;
   top: 102px;

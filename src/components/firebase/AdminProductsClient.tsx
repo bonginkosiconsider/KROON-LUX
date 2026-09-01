@@ -318,6 +318,75 @@ function productStatusLabel(product: Pick<Product, "status" | "isPublished">) {
   return statusOptions.find((option) => option.value === value)?.label ?? (value === "published" ? "Published" : "Draft");
 }
 
+function duplicateProductInput(product: Product): ProductInput {
+  const duplicateTitle = product.title.trim().replace(/\s+Copy(?:\s+\d+)?$/i, "").trim() || product.title.trim();
+  const categories = product.categories?.length ? [...product.categories] : product.category ? [product.category] : ["Uncategorized"];
+
+  return {
+    title: `${duplicateTitle} Copy`,
+    slug: "",
+    description: product.description ?? "",
+    price: product.price,
+    salePrice: product.salePrice,
+    productType: product.productType ?? "simple",
+    shortDescription: product.shortDescription ?? "",
+    sku: "",
+    manageStock: product.manageStock ?? false,
+    stockStatus: product.stockStatus ?? "in-stock",
+    lowStockThreshold: product.lowStockThreshold ?? 5,
+    backorders: product.backorders ?? "not-allowed",
+    weight: product.weight,
+    dimensions: product.dimensions ? { ...product.dimensions } : undefined,
+    shippingClass: product.shippingClass ?? "",
+    attributes: (product.attributes ?? []).map((attribute) => ({ ...attribute })),
+    variations: (product.variations ?? []).map((variation) => ({
+      id: newVariationId(),
+      name: variation.name,
+      sku: "",
+      price: variation.price,
+      salePrice: variation.salePrice,
+      manageStock: variation.manageStock ?? true,
+      inventoryCount: variation.inventoryCount,
+      lowStockThreshold: variation.lowStockThreshold ?? 5,
+      stockStatus: variation.stockStatus ?? "in-stock",
+      imageUrl: undefined,
+      weight: variation.weight,
+      dimensions: variation.dimensions ? { ...variation.dimensions } : undefined,
+      attributes: variation.attributes ? { ...variation.attributes } : {},
+    })),
+    metaTitle: product.metaTitle ?? "",
+    metaDescription: product.metaDescription ?? "",
+    categories,
+    tags: product.tags ? [...product.tags] : [],
+    status: product.status ?? (product.isPublished ? "published" : "draft"),
+    visibility: product.visibility ?? "shop-and-search",
+    category: categories[0] ?? "Uncategorized",
+    brandId: product.brandId ?? "",
+    brandName: product.brandName ?? "",
+    collectionIds: product.collectionIds ? [...product.collectionIds] : [],
+    inventoryCount: product.inventoryCount,
+    imageUrls: [],
+    isPublished: product.isPublished,
+    featured: product.featured,
+  };
+}
+
+function uniqueDuplicateSlug(baseSlug: string, usedSlugs: Set<string>) {
+  const root = slugify(baseSlug) || "product";
+  const candidates = [root, `${root}-copy`, `${root}-copy-2`, `${root}-copy-3`, `${root}-copy-4`, `${root}-copy-5`];
+  for (const candidate of candidates) {
+    if (!usedSlugs.has(candidate)) return candidate;
+  }
+
+  let attempt = 1;
+  let candidate = `${root}-copy-${attempt}`;
+  while (usedSlugs.has(candidate)) {
+    attempt += 1;
+    candidate = `${root}-copy-${attempt}`;
+  }
+  return candidate;
+}
+
 export function AdminProductsClient() {
   const { products, loading } = useProducts(false);
   const categoryOptions = useAdminCategories();
@@ -594,6 +663,24 @@ export function AdminProductsClient() {
       setMessage(`${product.title} deleted.`);
     } catch (error) {
       setMessage(`Product could not be deleted. ${friendlySaveError(error)}`);
+    }
+  }
+
+  async function duplicateCatalogProduct(product: Product) {
+    const duplicate = duplicateProductInput(product);
+    const nextSlug = uniqueDuplicateSlug(product.slug, new Set(products.map((item) => item.slug)));
+
+    try {
+      await withCatalogAction(async () => {
+        await createProduct({
+          ...duplicate,
+          slug: nextSlug,
+          title: `${product.title.trim().replace(/\s+Copy(?:\s+\d+)?$/i, "").trim() || product.title.trim()} Copy`,
+        });
+      });
+      setMessage(`${product.title} duplicated.`);
+    } catch (error) {
+      setMessage(`Product could not be duplicated. ${friendlySaveError(error)}`);
     }
   }
 
@@ -1136,6 +1223,9 @@ export function AdminProductsClient() {
                     <button disabled={catalogBusy} type="button" className="text-button" onClick={() => startEditor(item)}>
                       Edit
                     </button>
+                    <button disabled={catalogBusy} type="button" className="text-button" onClick={() => duplicateCatalogProduct(item)}>
+                      Duplicate
+                    </button>
                     <button disabled={catalogBusy} type="button" className="text-button" onClick={() => updateProductStatus(item, nextStatus)}>
                       {nextStatus === "published" ? "Publish" : "Draft"}
                     </button>
@@ -1174,6 +1264,9 @@ export function AdminProductsClient() {
                     <div className="admin-actions">
                       <button disabled={catalogBusy} type="button" className="text-button" onClick={() => startEditor(item)}>
                         Edit
+                      </button>
+                      <button disabled={catalogBusy} type="button" className="text-button" onClick={() => duplicateCatalogProduct(item)}>
+                        Duplicate
                       </button>
                       <button disabled={catalogBusy} type="button" className="text-button" onClick={() => updateProductStatus(item, nextStatus)}>
                         {nextStatus === "published" ? "Publish" : "Draft"}
