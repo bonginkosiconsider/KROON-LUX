@@ -194,18 +194,13 @@ export function subscribeProducts(callback: (products: Product[]) => void, publi
   }, onError);
 }
 
-<<<<<<< Updated upstream
-export function subscribeProduct(slug: string, callback: (product: Product | null) => void): Unsubscribe {
+export function subscribeProduct(slug: string, callback: (product: Product | null) => void, onError?: (error: Error) => void): Unsubscribe {
+  // Query by slug alone to avoid requiring a composite Firestore index, then
+  // enforce storefront visibility in application code.
   return onSnapshot(query(products, where("slug", "==", slug)), (snapshot) => {
     const item = snapshot.docs[0];
     const product = item ? mapProduct(item.id, item.data()) : null;
     callback(product?.isPublished ? product : null);
-  });
-=======
-export function subscribeProduct(slug: string, callback: (product: Product | null) => void, onError?: (error: Error) => void): Unsubscribe {
-  return onSnapshot(query(products, where("slug", "==", slug), where("isPublished", "==", true)), (snapshot) => {
-    const item = snapshot.docs[0];
-    callback(item ? mapProduct(item.id, item.data()) : null);
   }, onError);
 }
 
@@ -216,7 +211,6 @@ function createdAtMillis(product: Product) {
 
 function newestFirst(first: Product, second: Product) {
   return createdAtMillis(second) - createdAtMillis(first);
->>>>>>> Stashed changes
 }
 
 function randomCode() {
