@@ -68,6 +68,22 @@ export type StoreTaxonomy = {
   name: string;
   slug: string;
   description?: string;
+  /** Brands created before this field existed are treated as active. */
+  active?: boolean;
+  /** Used only by the storefront brand lineup. */
+  logoUrl?: string;
+  sortOrder: number;
+  createdAt: FirestoreTimestamp;
+  updatedAt: FirestoreTimestamp;
+};
+
+export type Testimonial = {
+  id: string;
+  customerName: string;
+  message: string;
+  rating: number;
+  imageUrl?: string;
+  active: boolean;
   sortOrder: number;
   createdAt: FirestoreTimestamp;
   updatedAt: FirestoreTimestamp;

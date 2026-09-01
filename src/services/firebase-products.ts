@@ -195,9 +195,10 @@ export function subscribeProducts(callback: (products: Product[]) => void, publi
 }
 
 export function subscribeProduct(slug: string, callback: (product: Product | null) => void): Unsubscribe {
-  return onSnapshot(query(products, where("slug", "==", slug), where("isPublished", "==", true)), (snapshot) => {
+  return onSnapshot(query(products, where("slug", "==", slug)), (snapshot) => {
     const item = snapshot.docs[0];
-    callback(item ? mapProduct(item.id, item.data()) : null);
+    const product = item ? mapProduct(item.id, item.data()) : null;
+    callback(product?.isPublished ? product : null);
   });
 }
 

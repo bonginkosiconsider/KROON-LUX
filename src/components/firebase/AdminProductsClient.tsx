@@ -747,10 +747,10 @@ export function AdminProductsClient() {
             </button>
           ) : null}
           <div aria-label="Catalog layout" className="admin-view-toggle" role="tablist">
-            <button className={catalogView === "list" ? "active" : ""} onClick={() => setCatalogView("list")} type="button">
+            <button aria-pressed={catalogView === "list"} className={catalogView === "list" ? "active" : ""} onClick={() => setCatalogView("list")} type="button">
               List
             </button>
-            <button className={catalogView === "grid" ? "active" : ""} onClick={() => setCatalogView("grid")} type="button">
+            <button aria-pressed={catalogView === "grid"} className={catalogView === "grid" ? "active" : ""} onClick={() => setCatalogView("grid")} type="button">
               Grid
             </button>
           </div>
@@ -1128,7 +1128,7 @@ export function AdminProductsClient() {
             <div className="admin-table-row product-table-row admin-table-head">
               <span>
                 <label className="admin-row-select admin-row-select-head">
-                  <input checked={allSelected} onChange={toggleAll} type="checkbox" />
+                  <input aria-label="Select all products" checked={allSelected} onChange={toggleAll} type="checkbox" />
                   <span>Product</span>
                 </label>
               </span>
@@ -1147,8 +1147,11 @@ export function AdminProductsClient() {
                 <div className={`admin-table-row product-table-row${selectedSet.has(item.id) ? " is-selected" : ""}`} key={item.id}>
                   <span>
                     <label className="admin-row-select">
-                      <input checked={selectedSet.has(item.id)} onChange={() => toggleSelected(item.id)} type="checkbox" />
-                      <strong>{item.title}</strong>
+                      <input aria-label={`Select ${item.title}`} checked={selectedSet.has(item.id)} onChange={() => toggleSelected(item.id)} type="checkbox" />
+                      <span className="admin-product-listing">
+                        {item.imageUrls[0] ? <img alt="" src={item.imageUrls[0]} /> : <span aria-hidden="true" className="admin-product-thumbnail-placeholder" />}
+                        <strong>{item.title}</strong>
+                      </span>
                     </label>
                     <small>{item.categories?.join(", ") || item.category}</small>
                   </span>

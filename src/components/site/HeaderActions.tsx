@@ -13,6 +13,7 @@ export function HeaderActions() {
   const signedIn = Boolean(user);
   const { itemCount } = useFirebaseCart();
   const { items: brands } = useStoreTaxonomies("brands");
+  const activeBrands = brands.filter((brand) => brand.active !== false);
 
   return (
     <>
@@ -31,7 +32,7 @@ export function HeaderActions() {
       {menuOpen ? <nav className="mobile-navigation" id="mobile-navigation" aria-label="Mobile navigation">
         <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
         <Link href="/collections/new-arrivals" onClick={() => setMenuOpen(false)}>New arrivals</Link>
-        <details className="mobile-brands"><summary>Brands</summary>{brands.map((brand) => <Link href={`/collections/${brand.slug}`} key={brand.id} onClick={() => setMenuOpen(false)}>{brand.name}</Link>)}</details>
+        <details className="mobile-brands"><summary>Brands</summary>{activeBrands.map((brand) => <Link href={`/collections/${brand.slug}`} key={brand.id} onClick={() => setMenuOpen(false)}>{brand.name}</Link>)}</details>
         <Link href="/collections/accessories" onClick={() => setMenuOpen(false)}>Accessories</Link>
         <Link href="/collections/sale" onClick={() => setMenuOpen(false)}>Sale</Link>
         <Link href="/collections/soccer-jerseys" onClick={() => setMenuOpen(false)}>Soccer jerseys</Link>

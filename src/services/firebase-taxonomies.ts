@@ -5,7 +5,7 @@ import { db } from "@/lib/firebase";
 import { slugify, type StoreTaxonomy } from "@/lib/firebase-models";
 
 export type TaxonomyKind = "brands" | "collections";
-type TaxonomyInput = Pick<StoreTaxonomy, "name" | "description"> & { slug?: string };
+type TaxonomyInput = Pick<StoreTaxonomy, "name" | "description" | "active" | "logoUrl"> & { slug?: string };
 
 function mapTaxonomy(id: string, value: Record<string, unknown>): StoreTaxonomy {
   const name = String(value.name ?? "Untitled");
@@ -14,6 +14,8 @@ function mapTaxonomy(id: string, value: Record<string, unknown>): StoreTaxonomy 
     name,
     slug: String(value.slug ?? slugify(name)),
     description: typeof value.description === "string" ? value.description : "",
+    active: value.active !== false,
+    logoUrl: typeof value.logoUrl === "string" ? value.logoUrl : "",
     sortOrder: typeof value.sortOrder === "number" ? value.sortOrder : Number.MAX_SAFE_INTEGER,
     createdAt: (value.createdAt as StoreTaxonomy["createdAt"]) ?? null,
     updatedAt: (value.updatedAt as StoreTaxonomy["updatedAt"]) ?? null,
@@ -42,6 +44,7 @@ export async function createTaxonomy(kind: TaxonomyKind, input: TaxonomyInput) {
     name,
     slug: input.slug?.trim() || slugify(name),
     description: input.description?.trim() || "",
+    ...(kind === "brands" ? { active: input.active !== false, logoUrl: input.logoUrl?.trim() || "" } : {}),
     sortOrder,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -66,6 +69,7 @@ export async function updateTaxonomy(kind: TaxonomyKind, id: string, input: Taxo
     name,
     slug: input.slug?.trim() || slugify(name),
     description: input.description?.trim() || "",
+    ...(kind === "brands" ? { active: input.active !== false, logoUrl: input.logoUrl?.trim() || "" } : {}),
     updatedAt: serverTimestamp(),
   });
 

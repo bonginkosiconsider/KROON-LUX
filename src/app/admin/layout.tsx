@@ -13,6 +13,7 @@ const navigation = [
   ["/admin/categories", "Categories"],
   ["/admin/brands", "Brands"],
   ["/admin/collections", "Collections"],
+  ["/admin/testimonials", "Testimonials"],
   ["/admin/promoters", "Promoters"],
   ["/admin/shipping-zones", "Shipping Zones"],
   ["/admin/tax-rates", "Tax Rates"],

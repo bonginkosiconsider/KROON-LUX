@@ -1,7 +1,10 @@
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { HeroSlideshow } from "@/components/site/HeroSlideshow";
+import { ServiceBenefits } from "@/components/site/ServiceBenefits";
 import { FirebaseCategoryGrid, FirebaseProductGrid } from "@/components/firebase/StorefrontCatalog";
+import { BrandsLineup } from "@/components/firebase/BrandsLineup";
+import { TestimonialCarousel } from "@/components/site/TestimonialCarousel";
 
 export default function Home() {
   const facets = { categories: [] as { id: string; name: string; slug: string; parentId: string | null }[], collections: [], sizes: [], colors: [] };
@@ -86,6 +89,10 @@ export default function Home() {
             Apply from account
           </a>
         </section>
+
+        <BrandsLineup />
+        <ServiceBenefits />
+        <TestimonialCarousel />
 
         <section className="newsletter section" id="newsletter">
           <div>
