@@ -1,0 +1,101 @@
+env:
+  - variable: DATABASE_URL
+    value: postgresql://kroon:kroon@localhost:5432/kroon_luxe?schema=public
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: SESSION_SECRET
+    value: replace-with-a-long-random-secret
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: ADMIN_EMAIL_1
+    value: bonginkosiconsider@gmail.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: ADMIN_EMAIL_2
+    value: admin-two@example.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_ADMIN_EMAILS
+    value: bonginkosiconsider@gmail.com,kroonluxe@gmail.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyCWzDLzVeRCpF6UkIkkBQeJbK5uP95SwK0
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: jozi-plug.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: jozi-plug
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: jozi-plug.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: 97757399023
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:97757399023:web:c28e4563cec749442b981a
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-L4CBTM78GQ
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: STRIPE_SECRET_KEY
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: STRIPE_WEBHOOK_SECRET
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: S3_ENDPOINT
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: S3_BUCKET
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: S3_ACCESS_KEY_ID
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: S3_SECRET_ACCESS_KEY
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: EMAIL_PROVIDER
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://kroonluxe.co.za
+    availability:
+      - BUILD
+      - RUNTIME
