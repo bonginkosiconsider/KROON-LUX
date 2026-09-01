@@ -3,7 +3,7 @@ import "./globals.css";
 import { CustomerChatWidget } from "@/components/firebase/CustomerChatWidget";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://kroonluxe.example"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://kroonluxe.co.za"),
   title: {
     default: "KROON LUXE | Modern heirlooms",
     template: "%s | KROON LUXE",

@@ -1,1 +1,9 @@
-{ "firestore": { "rules": "firestore.rules" }, "storage": { "rules": "storage.rules" } }
+{
+  "firestore": { "rules": "firestore.rules" },
+  "storage": { "rules": "storage.rules" },
+  "apphosting": {
+    "backendId": "kroon-luxe",
+    "rootDir": ".",
+    "alwaysDeployFromSource": true
+  }
+}

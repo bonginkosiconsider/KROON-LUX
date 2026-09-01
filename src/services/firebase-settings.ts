@@ -114,8 +114,9 @@ const settingsRef = doc(db, "settings", "store");
 export function subscribeStoreSettings(callback: (settings: StoreSettings) => void): Unsubscribe {
   return onSnapshot(settingsRef, (snapshot) => {
     const data = snapshot.data() as Partial<StoreSettings> | undefined;
-    const heroSlides = Array.isArray(data?.heroSlides) && data.heroSlides.every((slide) => typeof slide?.id === "string")
-      ? data.heroSlides.map((slide, index) => ({
+    const configuredHeroSlides = Array.isArray(data?.heroSlides) ? data.heroSlides : [];
+    const heroSlides = configuredHeroSlides.length
+      ? configuredHeroSlides.map((slide, index) => ({
         ...defaultHeroSlides[index % defaultHeroSlides.length],
         ...slide,
         id: typeof slide?.id === "string" ? slide.id : `hero-slide-${index + 1}`,
