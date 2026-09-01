@@ -1,116 +1,20 @@
-.hero {
-  background: #0d0d0c;
-  height: 70vh;
-  min-height: 480px;
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-}
-
-.slides,
-.slide,
-.image {
-  height: 100%;
-  width: 100%;
-}
-
-.overlay {
-  bottom: 14%;
-  color: #fff;
-  left: 7vw;
-  max-width: 520px;
-  position: absolute;
-  z-index: 2;
-}
-
-.overlay::before {
-  background: linear-gradient(90deg, rgba(13, 13, 12, .74), transparent);
-  content: "";
-  inset: -80px -180px -70px -80px;
-  pointer-events: none;
-  position: absolute;
-  z-index: -1;
-}
-
-.eyebrow { font: 700 10px/1.5 Arial, sans-serif; letter-spacing: .18em; margin: 0 0 16px; text-transform: uppercase; }
-.overlay h1 { font: 400 clamp(48px, 8vw, 104px)/.94 Georgia, serif; letter-spacing: -.05em; margin: 0; }
-.intro { color: rgba(255,255,255,.82); font: 16px/1.55 Arial, sans-serif; margin: 22px 0 28px; max-width: 390px; }
-.cta { background: #fff; color: #151412; display: inline-flex; font: 700 10px/1 Arial, sans-serif; letter-spacing: .14em; padding: 15px 20px; text-transform: uppercase; }
-.cta:hover { background: #b9975b; color: #fff; }
-
-.slides {
-  position: relative;
-}
-
-.slide {
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 700ms ease-in-out;
-}
-
-.active {
-  opacity: 1;
-  pointer-events: auto;
-  z-index: 1;
-}
-
-.image {
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
-
-.dots {
-  align-items: center;
-  bottom: 28px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  left: 0;
-  position: absolute;
-  right: 0;
-  z-index: 2;
-}
-
-.dot {
-  background: rgba(255, 255, 255, 0.58);
-  border: 0;
-  border-radius: 999px;
-  cursor: pointer;
-  height: 8px;
-  padding: 0;
-  transition: background-color 200ms ease, transform 200ms ease;
-  width: 8px;
-}
-
-.dot:hover,
-.dot:focus-visible,
-.activeDot {
-  background: #fff;
-  outline: none;
-  transform: scale(1.25);
-}
-
-@media (max-width: 767px) {
-  .hero {
-    height: 50vh;
-    min-height: 320px;
-  }
-
-  .dots {
-    bottom: 18px;
-  }
-
-  .overlay { bottom: 18%; left: 6vw; right: 6vw; }
-  .overlay h1 { font-size: 48px; }
-  .intro { font-size: 14px; margin: 14px 0 20px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slide,
-  .dot {
-    transition: none;
-  }
-}
+.hero { background: #ededeb; height: min(76vw, 840px); min-height: 520px; overflow: hidden; position: relative; width: 100%; }
+.hero:focus-visible { outline: 2px solid #b08a47; outline-offset: -5px; }
+.slides, .slide, .slide picture, .image { height: 100%; width: 100%; }
+.slides { position: relative; }
+.slide { inset: 0; opacity: 0; overflow: hidden; pointer-events: none; position: absolute; transform: scale(1.025) translateX(1.2%); transition: opacity 900ms cubic-bezier(.22,.61,.36,1), transform 1300ms cubic-bezier(.22,.61,.36,1); }
+.active { opacity: 1; pointer-events: auto; transform: scale(1) translateX(0); z-index: 1; }
+.image { display: block; object-fit: cover; object-position: center; transform: scale(1.015); transition: transform 6s cubic-bezier(.2,.65,.3,1); }
+.active .image { transform: scale(1.07); }
+.overlay { align-items: center; color: #fff; display: flex; flex-direction: column; gap: 0; inset: 0; justify-content: center; opacity: 0; padding: 90px 8vw 100px; pointer-events: none; position: absolute; text-align: center; transform: translateY(18px) scale(.98); transition: opacity 380ms ease, transform 650ms cubic-bezier(.22,.61,.36,1); z-index: 2; }
+.overlay::before { background: radial-gradient(ellipse at center, rgba(0,0,0,.42), transparent 62%); content: ""; inset: 0; pointer-events: none; position: absolute; z-index: -1; }
+.overlay.left { align-items: flex-start; text-align: left; }.overlay.left::before { background: linear-gradient(90deg, rgba(0,0,0,.58), rgba(0,0,0,.18), transparent 65%); }.overlay.right { align-items: flex-end; text-align: right; }.overlay.right::before { background: linear-gradient(270deg, rgba(0,0,0,.58), rgba(0,0,0,.18), transparent 65%); }
+.contentActive { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); transition-delay: 260ms; z-index: 3; }
+.eyebrow { font: 700 10px/1.4 Arial, sans-serif; letter-spacing: .2em; margin: 0 0 15px; text-transform: uppercase; }
+.overlay h1 { font: 400 clamp(38px, 5.5vw, 82px)/.98 Georgia, serif; letter-spacing: -.045em; margin: 0; max-width: 720px; text-transform: uppercase; }
+.cta { border: 1px solid currentColor; color: inherit; font: 700 10px/1 Arial, sans-serif; letter-spacing: .16em; margin-top: 28px; padding: 16px 25px; text-transform: uppercase; transform: translateY(12px); transition: background 220ms ease, border-color 220ms ease, color 220ms ease, opacity 400ms ease 420ms, transform 500ms cubic-bezier(.22,.61,.36,1) 420ms; }
+.contentActive .cta { transform: translateY(0); }.cta:hover, .cta:focus-visible { background: #fff; border-color: #fff; color: #292724; outline: none; }
+.controls { bottom: 34px; display: flex; gap: 8px; position: absolute; right: 5vw; z-index: 4; }.controls button { align-items: center; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.72); color: #fff; display: inline-flex; font-size: 21px; height: 42px; justify-content: center; transition: background 180ms ease, color 180ms ease; width: 42px; }.controls button:hover, .controls button:focus-visible { background: #fff; color: #292724; outline: none; }
+.dots { bottom: 36px; display: flex; gap: 8px; left: 5vw; position: absolute; z-index: 4; }.dot { background: rgba(255,255,255,.55); border: 0; border-radius: 99px; height: 3px; padding: 0; transition: background 200ms ease, width 250ms ease; width: 23px; }.dot:hover, .dot:focus-visible, .activeDot { background: #fff; outline: none; width: 46px; }
+@media (max-width: 767px) { .hero { height: 68vh; min-height: 480px; }.overlay { padding: 68px 7vw 94px; }.overlay h1 { font-size: clamp(34px, 11vw, 52px); }.overlay.left, .overlay.right { align-items: center; text-align: center; }.overlay.left::before, .overlay.right::before { background: linear-gradient(90deg, rgba(0,0,0,.44), rgba(0,0,0,.2), rgba(0,0,0,.44)); }.controls { bottom: 27px; right: 6vw; }.dots { bottom: 46px; left: 6vw; }.controls button { height: 38px; width: 38px; } }
+@media (prefers-reduced-motion: reduce) { .slide, .image, .overlay, .cta, .dot { transition: none; }.active .image { transform: none; } }
