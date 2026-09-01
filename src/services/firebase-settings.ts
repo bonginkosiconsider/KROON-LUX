@@ -12,6 +12,7 @@ export type StoreSettings = {
   heroSlides: HeroSlide[];
   heroAutoplaySeconds: number;
   featuredProductIds: string[];
+  editorialCollections: EditorialCollectionBlock[];
   socialLinks: SocialLink[];
 };
 
@@ -29,6 +30,16 @@ export type HeroSlide = {
   sortOrder: number;
   enabled: boolean;
   textPosition: "left" | "center" | "right";
+};
+
+export type EditorialCollectionBlock = {
+  id: string;
+  productIds: string[];
+  displayName: string;
+  imageUrl: string;
+  altText: string;
+  sortOrder: number;
+  enabled: boolean;
 };
 
 const defaultHeroSlides: HeroSlide[] = [
@@ -94,6 +105,7 @@ export const defaultStoreSettings: StoreSettings = {
   heroSlides: defaultHeroSlides,
   heroAutoplaySeconds: 6,
   featuredProductIds: [],
+  editorialCollections: [],
   socialLinks: defaultSocialLinks,
 };
 
@@ -123,8 +135,19 @@ export function subscribeStoreSettings(callback: (settings: StoreSettings) => vo
     const featuredProductIds = Array.isArray(data?.featuredProductIds)
       ? [...new Set(data.featuredProductIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0).map((id) => id.trim()))]
       : [];
+    const editorialCollections = Array.isArray(data?.editorialCollections)
+      ? data.editorialCollections.flatMap((block, index) => typeof block?.id === "string" ? [{
+        id: block.id,
+        productIds: Array.isArray(block.productIds) ? [...new Set(block.productIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0).map((id) => id.trim()))] : [],
+        displayName: typeof block.displayName === "string" ? block.displayName : "",
+        imageUrl: typeof block.imageUrl === "string" ? block.imageUrl : "",
+        altText: typeof block.altText === "string" ? block.altText : "",
+        sortOrder: typeof block.sortOrder === "number" ? block.sortOrder : index + 1,
+        enabled: block.enabled !== false,
+      }] : [])
+      : [];
 
-    callback({ ...defaultStoreSettings, ...data, heroSlides, heroAutoplaySeconds: Math.min(15, Math.max(3, Number(data?.heroAutoplaySeconds) || 6)), featuredProductIds, socialLinks });
+    callback({ ...defaultStoreSettings, ...data, heroSlides, heroAutoplaySeconds: Math.min(15, Math.max(3, Number(data?.heroAutoplaySeconds) || 6)), featuredProductIds, editorialCollections, socialLinks });
   });
 }
 
