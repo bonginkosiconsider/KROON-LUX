@@ -15,6 +15,10 @@ export function HeroSlideshow() {
   const slides = useMemo(() => settings.heroSlides.filter((slide) => slide.enabled && slide.imageUrl).sort((a, b) => a.sortOrder - b.sortOrder), [settings.heroSlides]);
   const selectSlide = useCallback((index: number) => { setActiveIndex((index + slides.length) % slides.length); setNavigationVersion((current) => current + 1); }, [slides.length]);
   useEffect(() => {
+    setActiveIndex((current) => slides.length ? current % slides.length : 0);
+  }, [slides.length]);
+
+  useEffect(() => {
     if (slides.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => setActiveIndex((current) => (current + 1) % slides.length), settings.heroAutoplaySeconds * 1000);
     return () => window.clearInterval(timer);
