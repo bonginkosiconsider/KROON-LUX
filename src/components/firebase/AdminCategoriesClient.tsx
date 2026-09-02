@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type DragEvent, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { useProducts } from "@/hooks/use-products";
 import {
   createCategory,
   removeCategory,
   renameCategory,
+  reorderCategories,
   subscribeCategories,
   type AdminCategory,
 } from "@/services/firebase-categories";
@@ -22,12 +24,14 @@ function friendlyCategoryError(error: unknown) {
 }
 
 export function AdminCategoriesClient() {
+  const router = useRouter();
   const { products, loading: productsLoading } = useProducts(false);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
 
   useEffect(() => subscribeCategories((next) => {
     setCategories(next);
@@ -96,6 +100,25 @@ export function AdminCategoriesClient() {
     }
   }
 
+  async function dropCategory(event: DragEvent<HTMLDivElement>, target: AdminCategory) {
+    event.preventDefault();
+    if (!draggedCategory || draggedCategory === target.id) return;
+    const from = categories.findIndex((item) => item.id === draggedCategory);
+    const to = categories.findIndex((item) => item.id === target.id);
+    if (from < 0 || to < 0) return;
+    const next = [...categories];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setDraggedCategory(null);
+    setCategories(next);
+    try {
+      await reorderCategories(next);
+      setMessage("Category order saved.");
+    } catch (error) {
+      setMessage(`Category order could not be saved. ${friendlyCategoryError(error)}`);
+    }
+  }
+
   return (
     <>
       <header className="admin-page-header">
@@ -137,6 +160,7 @@ export function AdminCategoriesClient() {
 
         <div className="admin-table">
           <div className="admin-table-row admin-table-head">
+            <span aria-hidden="true" />
             <span>Name</span>
             <span>Slug</span>
             <span>Source</span>
@@ -144,8 +168,17 @@ export function AdminCategoriesClient() {
             <span>Actions</span>
           </div>
           {categories.length ? categories.map((category) => (
-            <div className="admin-table-row" key={category.id}>
-              <span>
+            <div
+              className={`admin-table-row category-row${draggedCategory === category.id ? " is-dragging" : ""}`}
+              draggable
+              key={category.id}
+              onDragEnd={() => setDraggedCategory(null)}
+              onDragOver={(event) => event.preventDefault()}
+              onDragStart={() => setDraggedCategory(category.id)}
+              onDrop={(event) => void dropCategory(event, category)}
+            >
+              <span className="category-drag-handle" aria-label={`Drag ${category.name} to reorder`} title="Drag to reorder">⠿</span>
+              <span className="category-name-cell">
                 {category.canRename ? (
                   <input
                     aria-label={`Rename ${category.name}`}
@@ -153,9 +186,8 @@ export function AdminCategoriesClient() {
                     disabled={busyId === category.id}
                     onBlur={(event) => rename(category, event.target.value)}
                   />
-                ) : (
-                  <strong>{category.name}</strong>
-                )}
+                  ) : null}
+                <button className="category-name-link" onClick={() => router.push(`/admin/categories/${category.slug}`)} type="button"><strong>{category.name}</strong></button>
               </span>
               <span>{category.slug}</span>
               <span>{category.source === "default" ? "Default" : "Custom"}</span>

@@ -51,7 +51,6 @@ export function ProductCard({ product, recommendation = false }: ProductCardProp
       </Link>
       <div className="product-card-body">
         <div>
-          <p className="eyebrow">{product.category?.name ?? product.collection?.name ?? product.brand ?? "Kroon Luxe"}</p>
           <h3>
             <Link href={`/products/${product.slug}`}>{product.name}</Link>
           </h3>

@@ -12,6 +12,7 @@ import { useProducts } from "@/hooks/use-products";
 import { useStoreSettings } from "@/hooks/use-store-settings";
 import { formatMoney } from "@/lib/format";
 import { effectiveVariantPriceInCents, resolveFirebaseCartLines, variantDescriptor } from "@/lib/firebase-product-adapter";
+import { shippingCostCents } from "@/lib/shipping";
 import { calculateReferralDiscountCents } from "@/services/firebase-referrals";
 
 export function FirebaseCheckoutClient() {
@@ -24,7 +25,7 @@ export function FirebaseCheckoutClient() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const lines = resolveFirebaseCartLines(products, items);
   const subtotal = lines.reduce((sum, line) => sum + effectiveVariantPriceInCents(line.variant) * line.quantity, 0);
-  const shipping = subtotal > 0 && subtotal < 150000 ? 9500 : 0;
+  const shipping = shippingCostCents(subtotal);
   const discount = user ? calculateReferralDiscountCents(subtotal, referral) : 0;
   const total = Math.max(0, subtotal + shipping - discount + tip);
   const itemCount = lines.reduce((count, line) => count + line.quantity, 0);

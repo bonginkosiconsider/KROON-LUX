@@ -6,8 +6,9 @@ import { useActiveReferral } from "@/hooks/use-active-referral";
 import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
 import { useFirebaseCart } from "@/hooks/use-firebase-cart";
 import { useProducts } from "@/hooks/use-products";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatMoneyPrecise } from "@/lib/format";
 import { useStoreSettings } from "@/hooks/use-store-settings";
+import { FREE_SHIPPING_THRESHOLD_CENTS, shippingCostCents } from "@/lib/shipping";
 import {
   calculateReferralDiscountCents,
 } from "@/services/firebase-referrals";
@@ -26,7 +27,8 @@ export function FirebaseCartClient() {
   const { products, loading } = useProducts();
   const lines = resolveFirebaseCartLines(products, items);
   const subtotal = lines.reduce((sum, line) => sum + effectiveVariantPriceInCents(line.variant) * line.quantity, 0);
-  const shipping = subtotal > 0 && subtotal < 150000 ? 9500 : 0;
+  const shipping = shippingCostCents(subtotal);
+  const shippingMessage = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS ? "You are eligible for free shipping." : `Spend ${formatMoneyPrecise(FREE_SHIPPING_THRESHOLD_CENTS - subtotal, currency)} more for free shipping.`;
   const discount = user ? calculateReferralDiscountCents(subtotal, referral) : 0;
   const total = Math.max(0, subtotal + shipping - discount);
 
@@ -35,8 +37,7 @@ export function FirebaseCartClient() {
   return (
     <main className="page-shell">
       <section className="simple-hero">
-        <p className="eyebrow gold">Bag</p>
-        <h1>Your selected pieces.</h1>
+        <h1 className="cart-page-title">CART</h1>
       </section>
       {!lines.length ? (
         <section className="empty-state">
@@ -48,6 +49,7 @@ export function FirebaseCartClient() {
         </section>
       ) : (
         <section className="cart-layout">
+          <p className="free-shipping-message">{shippingMessage}</p>
           <div className="cart-lines">
             {lines.map(({ cartItemId, product, variant, quantity }) => {
               const available = variantAvailableQuantity(variant);

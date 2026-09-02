@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { ProductMediaDropzone, type ProductMediaItem } from "@/components/firebase/ProductMediaDropzone";
 import { useAdminCategories } from "@/hooks/use-admin-categories";
 import { useProducts } from "@/hooks/use-products";
@@ -88,7 +89,7 @@ const backorderOptions: { value: BackorderPolicy; label: string }[] = [
 
 const statusOptions: { value: ProductStatus; label: string }[] = [
   { value: "draft", label: "Draft" },
-  { value: "published", label: "Published" },
+  { value: "published", label: "Active" },
   { value: "pending-review", label: "Pending review" },
   { value: "private", label: "Private" },
 ];
@@ -107,6 +108,36 @@ type BulkProductValues = {
   salePrice: string;
   inventoryCount: string;
 };
+
+type ListStatus = "all" | ProductStatus;
+type ProductSort = "newest" | "oldest" | "title-asc" | "title-desc" | "inventory-desc" | "inventory-asc" | "price-desc" | "price-asc";
+type CsvRow = Record<string, string>;
+
+const catalogPageSize = 20;
+
+function csvCell(value: unknown) {
+  const text = String(value ?? "");
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function parseCsv(text: string): CsvRow[] {
+  const rows: string[][] = [];
+  let row: string[] = [], value = "", quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (character === '"' && quoted && text[index + 1] === '"') { value += '"'; index += 1; }
+    else if (character === '"') quoted = !quoted;
+    else if (character === "," && !quoted) { row.push(value.trim()); value = ""; }
+    else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && text[index + 1] === "\n") index += 1;
+      row.push(value.trim()); if (row.some(Boolean)) rows.push(row); row = []; value = "";
+    } else value += character;
+  }
+  row.push(value.trim()); if (row.some(Boolean)) rows.push(row);
+  const [headers, ...data] = rows;
+  if (!headers?.length) return [];
+  return data.map((cells) => Object.fromEntries(headers.map((header, index) => [header.toLowerCase().trim(), cells[index] ?? ""])));
+}
 
 const emptyForm: ProductFormState = {
   title: "",
@@ -304,6 +335,9 @@ function friendlySaveError(error: unknown) {
     if (error.message === "SKU_ALREADY_EXISTS") return "A product or variation already uses that SKU.";
     if (error.message === "SLUG_ALREADY_EXISTS") return "Another product already uses that slug.";
     if (error.message === "PRODUCT_NOT_FOUND") return "This product no longer exists.";
+    if (error.message.includes("permission-denied")) return "Your admin account is not allowed to write products. Check the Firebase admin role and Firestore rules.";
+    if (error.message.includes("failed-precondition")) return "Firebase could not complete the save. Refresh the page and try again.";
+    if (error.message.includes("network")) return "The network connection was interrupted. Check your connection and try again.";
     return error.message;
   }
   return "Please try again.";
@@ -388,7 +422,8 @@ function uniqueDuplicateSlug(baseSlug: string, usedSlugs: Set<string>) {
 }
 
 export function AdminProductsClient() {
-  const { products, loading } = useProducts(false);
+  const { products, loading, error } = useProducts(false);
+  const searchParams = useSearchParams();
   const categoryOptions = useAdminCategories();
   const { items: brands } = useStoreTaxonomies("brands");
   const { items: collections } = useStoreTaxonomies("collections");
@@ -402,56 +437,60 @@ export function AdminProductsClient() {
   const [saving, setSaving] = useState(false);
   const [catalogBusy, setCatalogBusy] = useState(false);
   const [catalogView, setCatalogView] = useState<CatalogView>("list");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ListStatus>("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [brandFilter, setBrandFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
+  const [sort, setSort] = useState<ProductSort>("newest");
+  const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkEditorOpen, setBulkEditorOpen] = useState(false);
   const [bulkValues, setBulkValues] = useState<Record<string, BulkProductValues>>({});
+  const [importRows, setImportRows] = useState<CsvRow[]>([]);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const importInput = useRef<HTMLInputElement>(null);
+  const deferredSearch = useDeferredValue(search);
 
   const matrixCount = useMemo(() => variationMatrix(form.attributes).length, [form.attributes]);
   const seoTitle = form.metaTitle.trim() || form.title.trim() || "Product title";
   const seoDescription = form.metaDescription.trim() || form.shortDescription.trim() || form.description.trim().slice(0, 160);
+  const categories = useMemo(() => Array.from(new Set(products.flatMap((product) => product.categories?.length ? product.categories : [product.category]).filter(Boolean))).sort(), [products]);
+  const brandsInCatalog = useMemo(() => Array.from(new Set(products.map((product) => product.brandName).filter(Boolean) as string[])).sort(), [products]);
+  const filteredProducts = useMemo(() => {
+    const query = deferredSearch.trim().toLowerCase();
+    return products.filter((product) => {
+      const inventory = product.productType === "variable" && product.variations?.length
+        ? product.variations.reduce((sum, variant) => sum + (variant.manageStock === false ? 0 : variant.inventoryCount), 0)
+        : product.inventoryCount;
+      const searchable = [product.title, product.sku, product.brandName, product.productType, product.category, ...(product.categories ?? []), ...(product.tags ?? []), ...(product.variations ?? []).flatMap((variant) => [variant.name, variant.sku, ...Object.values(variant.attributes ?? {})])].filter(Boolean).join(" ").toLowerCase();
+      return (statusFilter === "all" || productStatusValue(product) === statusFilter)
+        && (categoryFilter === "all" || (product.categories ?? [product.category]).includes(categoryFilter))
+        && (brandFilter === "all" || product.brandName === brandFilter)
+        && (stockFilter === "all" || (stockFilter === "out" ? inventory <= 0 : stockFilter === "low" ? inventory > 0 && inventory <= (product.lowStockThreshold ?? 5) : inventory > (product.lowStockThreshold ?? 5)))
+        && (!query || searchable.includes(query));
+    }).sort((left, right) => {
+      const inventory = (product: Product) => product.productType === "variable" && product.variations?.length ? product.variations.reduce((sum, variant) => sum + variant.inventoryCount, 0) : product.inventoryCount;
+      const created = (product: Product) => product.createdAt?.toMillis?.() ?? 0;
+      if (sort === "title-asc") return left.title.localeCompare(right.title);
+      if (sort === "title-desc") return right.title.localeCompare(left.title);
+      if (sort === "inventory-desc") return inventory(right) - inventory(left);
+      if (sort === "inventory-asc") return inventory(left) - inventory(right);
+      if (sort === "price-desc") return (right.salePrice ?? right.price) - (left.salePrice ?? left.price);
+      if (sort === "price-asc") return (left.salePrice ?? left.price) - (right.salePrice ?? right.price);
+      return sort === "oldest" ? created(left) - created(right) : created(right) - created(left);
+    });
+  }, [brandFilter, categoryFilter, deferredSearch, products, sort, statusFilter, stockFilter]);
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / catalogPageSize));
+  const visibleProducts = filteredProducts.slice(page * catalogPageSize, (page + 1) * catalogPageSize);
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const selectedProducts = useMemo(() => products.filter((product) => selectedSet.has(product.id)), [products, selectedSet]);
-  const allSelected = products.length > 0 && selectedProducts.length === products.length;
-  const previewProduct = useMemo<Product>(() => {
-    const previewCategories = form.categories.length ? form.categories : ["Uncategorized"];
-    const previewBrand = brands.find((item) => item.id === form.brandId)?.name ?? "";
-    const previewVariations = form.productType === "variable" ? form.variations.map((variation) => variationPayload(variation, form.price)) : [];
-
-    return {
-      id: editing?.id ?? "preview-product",
-      title: form.title.trim() || "Product title",
-      slug: form.slug.trim() || slugify(form.title || "product"),
-      description: form.description,
-      price: numberOrZero(form.price),
-      salePrice: numberOrUndefined(form.salePrice),
-      productType: form.productType,
-      shortDescription: text(form.shortDescription),
-      sku: form.sku.trim(),
-      manageStock: form.manageStock,
-      stockStatus: form.stockStatus,
-      lowStockThreshold: numberOrZero(form.lowStockThreshold || "5"),
-      backorders: form.backorders,
-      attributes: cleanAttributes(form.attributes),
-      variations: previewVariations,
-      metaTitle: form.metaTitle,
-      metaDescription: form.metaDescription,
-      categories: previewCategories,
-      tags: splitValues(form.tags),
-      status: form.status,
-      visibility: form.visibility,
-      category: previewCategories[0],
-      brandId: form.brandId,
-      brandName: previewBrand,
-      collectionIds: [...form.collectionIds],
-      inventoryCount: numberOrZero(form.inventoryCount),
-      imageUrls: media.map((item) => item.url),
-      isPublished: form.status === "published",
-      featured: form.featured,
-      createdAt: null,
-      updatedAt: null,
-    };
-  }, [brands, editing?.id, form, media]);
-
+  const allSelected = visibleProducts.length > 0 && visibleProducts.every((product) => selectedSet.has(product.id));
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const product = editId ? products.find((item) => item.id === editId) : null;
+    if (product && !editorOpen) startEditor(product);
+  }, [editorOpen, products, searchParams]);
   function loadEditorProduct(next: Product | null) {
     setMedia((current) => {
       current.forEach((item) => {
@@ -606,7 +645,54 @@ export function AdminProductsClient() {
   }
 
   function toggleAll() {
-    setSelectedIds(allSelected ? [] : products.map((product) => product.id));
+    setSelectedIds((current) => allSelected
+      ? current.filter((id) => !visibleProducts.some((product) => product.id === id))
+      : [...new Set([...current, ...visibleProducts.map((product) => product.id)])]);
+  }
+
+  function exportProducts(scope: "all" | "filtered" | "selected") {
+    const records = scope === "all" ? products : scope === "selected" ? selectedProducts : filteredProducts;
+    const header = ["Product", "SKU", "Price", "Compare-at price", "Inventory", "Variants", "Category", "Product type", "Vendor", "Status", "Tags"];
+    const content = records.map((product) => [
+      product.title, product.sku, product.price, product.salePrice ?? "", productStockLabel(product), product.variations?.length ?? 0,
+      (product.categories?.length ? product.categories : [product.category]).join(" | "), product.productType ?? "simple", product.brandName ?? "", productStatusValue(product), (product.tags ?? []).join(" | "),
+    ].map(csvCell).join(","));
+    const blob = new Blob([[header.join(","), ...content].join("\n")], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob); link.download = `kroon-luxe-products-${scope}.csv`; link.click(); URL.revokeObjectURL(link.href);
+    setMessage(`${records.length} product${records.length === 1 ? "" : "s"} exported.`);
+  }
+
+  async function readImportFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const rows = parseCsv(await file.text());
+    const invalid = rows.find((row) => !row.product?.trim() || !Number.isFinite(Number(row.price)) || Number(row.price) < 0);
+    if (!rows.length || invalid) {
+      setMessage("Import needs a CSV with Product and a non-negative Price column.");
+      event.target.value = "";
+      return;
+    }
+    setImportRows(rows);
+    event.target.value = "";
+  }
+
+  async function confirmImport() {
+    try {
+      await withCatalogAction(async () => {
+        await Promise.all(importRows.map((row) => createProduct({
+          title: row.product.trim(), slug: "", description: row.description ?? "", shortDescription: "", price: Number(row.price),
+          salePrice: row["compare-at price"] ? Number(row["compare-at price"]) : undefined, productType: (row["product type"] as ProductType) || "simple",
+          sku: row.sku ?? "", manageStock: Boolean(row.inventory?.trim()), stockStatus: Number(row.inventory) <= 0 ? "out-of-stock" : "in-stock",
+          inventoryCount: Number(row.inventory) || 0, lowStockThreshold: 5, backorders: "not-allowed", attributes: [], variations: [], metaTitle: "", metaDescription: "",
+          categories: (row.category ?? "Uncategorized").split("|").map((value) => value.trim()).filter(Boolean), category: (row.category ?? "Uncategorized").split("|")[0].trim(),
+          tags: (row.tags ?? "").split("|").map((value) => value.trim()).filter(Boolean), status: statusOptions.some((option) => option.value === row.status) ? row.status as ProductStatus : "draft",
+          visibility: "shop-and-search", brandId: "", brandName: row.vendor ?? "", collectionIds: [], imageUrls: [], isPublished: row.status === "published", featured: false,
+        })));
+      });
+      setMessage(`${importRows.length} product${importRows.length === 1 ? "" : "s"} imported.`);
+      setImportRows([]);
+    } catch (error) { setMessage(`Import could not be completed. ${friendlySaveError(error)}`); }
   }
 
   function openBulkEditor() {
@@ -669,16 +755,30 @@ export function AdminProductsClient() {
   async function duplicateCatalogProduct(product: Product) {
     const duplicate = duplicateProductInput(product);
     const nextSlug = uniqueDuplicateSlug(product.slug, new Set(products.map((item) => item.slug)));
+    const duplicateTitle = `${product.title.trim().replace(/\s+Copy(?:\s+\d+)?$/i, "").trim() || product.title.trim()} Copy`;
 
     try {
+      let duplicateId = "";
       await withCatalogAction(async () => {
-        await createProduct({
+        duplicateId = await createProduct({
           ...duplicate,
           slug: nextSlug,
-          title: `${product.title.trim().replace(/\s+Copy(?:\s+\d+)?$/i, "").trim() || product.title.trim()} Copy`,
+          title: duplicateTitle,
         });
       });
-      setMessage(`${product.title} duplicated.`);
+      // Open the copied values immediately; the live subscription will reconcile
+      // the row when Firestore publishes the new document.
+      startEditor({
+        ...product,
+        ...duplicate,
+        id: duplicateId,
+        title: duplicateTitle,
+        slug: nextSlug,
+        imageUrls: [],
+        createdAt: null,
+        updatedAt: null,
+      });
+      setMessage(`${product.title} duplicated. You can edit the copy now.`);
     } catch (error) {
       setMessage(`Product could not be duplicated. ${friendlySaveError(error)}`);
     }
@@ -821,6 +921,7 @@ export function AdminProductsClient() {
       setSelectedIds([]);
       setMessage(wasEditing ? "Product updated successfully." : "Product created successfully.");
     } catch (error) {
+      console.error("[admin products] save failed", error);
       setMessage(`Could not save product. ${friendlySaveError(error)}`);
     } finally {
       setSaving(false);
@@ -831,13 +932,15 @@ export function AdminProductsClient() {
     <div className="product-manager">
       <div className="product-manager-heading">
         <div>
-          <h2>{editorOpen ? (editing ? `Edit: ${editing.title}` : "Add new product") : "Product catalog"}</h2>
-          <p>{editorOpen ? "Build catalog records with inventory, media, attributes, variations, taxonomies, and SEO." : "Browse products, switch between list and grid views, and keep drafts out of the storefront."}</p>
+          <h2>{editorOpen ? (editing ? `Edit: ${editing.title}` : "Add product") : "Products"}</h2>
+          <p>{editorOpen ? "Build catalog records with inventory, media, attributes, variations, taxonomies, and SEO." : "Manage your catalogue, inventory, and product availability."}</p>
         </div>
         <div className="admin-toolbar-actions">
-          <button className="button button-primary" onClick={() => startEditor(null)} type="button">
-            Add new product
-          </button>
+          {!editorOpen ? <><button className="button button-secondary" onClick={() => exportProducts(selectedProducts.length ? "selected" : "filtered")} type="button">Export</button>
+          <button className="button button-secondary" onClick={() => importInput.current?.click()} type="button">Import</button>
+          <div className="more-actions"><button className="button button-secondary" aria-expanded={moreOpen} onClick={() => setMoreOpen((open) => !open)} type="button">More actions⌄</button>{moreOpen ? <div className="more-actions-menu"><button onClick={() => { exportProducts("all"); setMoreOpen(false); }} type="button">Export all products</button><button disabled={!selectedProducts.length} onClick={() => { openBulkEditor(); setMoreOpen(false); }} type="button">Bulk edit selected</button><button disabled={!selectedProducts.length} onClick={() => { bulkDelete(); setMoreOpen(false); }} type="button">Delete selected</button></div> : null}</div>
+          <button className="button button-primary" onClick={() => startEditor(null)} type="button">Add product</button>
+          <input accept=".csv,text/csv" aria-label="Import products CSV" className="sr-only" onChange={readImportFile} ref={importInput} type="file" /></> : null}
           {editorOpen ? (
             <button className="button button-secondary" onClick={closeEditor} type="button">
               Close editor
@@ -1033,7 +1136,6 @@ export function AdminProductsClient() {
               <input type="checkbox" checked={form.featured} onChange={(event) => setForm((current) => ({ ...current, featured: event.target.checked }))} />
               Featured product
             </label>
-            <button className="button button-primary" type="submit" disabled={saving}>{saving ? "Saving..." : "Save product"}</button>
           </section>
 
           <section className="admin-panel editor-panel">
@@ -1077,34 +1179,19 @@ export function AdminProductsClient() {
             <ProductMediaDropzone media={media} onAddFiles={addMedia} onRemove={removeMedia} onReorder={reorderMedia} />
           </section>
 
-          <section className="admin-panel editor-panel admin-preview-panel">
-            <div className="section-heading tight">
-              <div>
-                <p className="eyebrow">Storefront preview</p>
-                <h3>{previewProduct.title}</h3>
-              </div>
-              <span className={`admin-status-pill admin-status-${productStatusValue(previewProduct)}`}>{productStatusLabel(previewProduct)}</span>
-            </div>
-            <article className="admin-product-preview">
-              <div className="admin-product-preview-media">
-                {previewProduct.imageUrls[0] ? <img alt={previewProduct.title} src={previewProduct.imageUrls[0]} /> : <div className="product-image product-image-empty" aria-hidden="true" />}
-              </div>
-              <div className="admin-product-preview-copy">
-                <p className="eyebrow">{previewProduct.categories?.[0] ?? previewProduct.category}</p>
-                <strong>{previewProduct.title}</strong>
-                <p>{previewProduct.shortDescription || previewProduct.description || "The storefront card appears here once you add content."}</p>
-                <div className="admin-product-preview-meta">
-                  <span>{productPriceLabel(previewProduct)}</span>
-                  <span>{productStockLabel(previewProduct)}</span>
-                </div>
-              </div>
-            </article>
-          </section>
+          <button className="button button-primary" type="submit" disabled={saving}>{saving ? "Saving..." : "Save product"}</button>
+
         </aside>
       </form>
       ) : null}
 
       {message ? <p className="form-message">{message}</p> : null}
+
+      {importRows.length ? <section className="catalog-import-preview" aria-label="Import preview">
+        <div><strong>Ready to import {importRows.length} products</strong><p>Review the first records below. Products are validated before they are added.</p></div>
+        <div className="admin-actions"><button className="button button-primary" disabled={catalogBusy} onClick={confirmImport} type="button">{catalogBusy ? "Importing…" : "Confirm import"}</button><button className="button button-secondary" disabled={catalogBusy} onClick={() => setImportRows([])} type="button">Cancel</button></div>
+        <p>{importRows.slice(0, 3).map((row) => row.product).join(" · ")}{importRows.length > 3 ? " …" : ""}</p>
+      </section> : null}
 
       <section className="admin-panel product-list-panel">
         <div className="section-heading tight">
@@ -1112,10 +1199,18 @@ export function AdminProductsClient() {
             <p className="eyebrow">Catalog</p>
             <h2>All products</h2>
           </div>
-          <span>{loading ? "Loading..." : `${products.length} products`}</span>
+          <span>{loading ? "Loading..." : `${filteredProducts.length} of ${products.length} products`}</span>
         </div>
         <div className="admin-catalog-toolbar">
-          <p className="admin-catalog-summary">{selectedProducts.length ? `${selectedProducts.length} selected` : "Select products to draft or delete them in bulk."}</p>
+          <div className="catalog-filters">
+            <input aria-label="Search products" onChange={(event) => { setSearch(event.target.value); setPage(0); }} placeholder="Search products, SKU, vendor, tags…" value={search} />
+            <select aria-label="Filter by status" onChange={(event) => { setStatusFilter(event.target.value as ListStatus); setPage(0); }} value={statusFilter}><option value="all">All statuses</option>{statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+            <select aria-label="Filter by category" onChange={(event) => { setCategoryFilter(event.target.value); setPage(0); }} value={categoryFilter}><option value="all">All categories</option>{categories.map((category) => <option key={category} value={category}>{category}</option>)}</select>
+            <select aria-label="Filter by vendor" onChange={(event) => { setBrandFilter(event.target.value); setPage(0); }} value={brandFilter}><option value="all">All vendors</option>{brandsInCatalog.map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select>
+            <select aria-label="Filter by inventory" onChange={(event) => { setStockFilter(event.target.value); setPage(0); }} value={stockFilter}><option value="all">All inventory</option><option value="in">In stock</option><option value="low">Low stock</option><option value="out">Out of stock</option></select>
+            <select aria-label="Sort products" onChange={(event) => { setSort(event.target.value as ProductSort); setPage(0); }} value={sort}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="title-asc">Name A–Z</option><option value="title-desc">Name Z–A</option><option value="inventory-desc">Inventory highest</option><option value="inventory-asc">Inventory lowest</option><option value="price-desc">Price highest</option><option value="price-asc">Price lowest</option></select>
+          </div>
+          <p className="admin-catalog-summary">{selectedProducts.length ? `${selectedProducts.length} selected` : "Select products to apply bulk actions."}</p>
           <div className="admin-bulk-actions">
             {selectedProducts.length ? (
               <>
@@ -1179,24 +1274,24 @@ export function AdminProductsClient() {
           </section>
         ) : null}
 
-        {catalogView === "list" ? (
+        {error ? <div className="catalog-error"><strong>Unable to load products.</strong><button className="button button-secondary" onClick={() => window.location.reload()} type="button">Retry</button></div> : loading ? <div className="catalog-skeleton" aria-label="Loading products">{Array.from({ length: 6 }).map((_, index) => <div key={index} />)}</div> : catalogView === "list" ? (
           <div className="admin-table">
             <div className="admin-table-row product-table-row admin-table-head">
               <span>
                 <label className="admin-row-select admin-row-select-head">
                   <input aria-label="Select all products" checked={allSelected} onChange={toggleAll} type="checkbox" />
-                  <span>Product</span>
                 </label>
               </span>
-              <span>Brand</span>
-              <span>Type</span>
-              <span>SKU</span>
-              <span>Price</span>
-              <span>Stock</span>
+              <span>Product</span>
               <span>Status</span>
+              <span>Inventory</span>
+              <span>Category</span>
+              <span>Channels</span>
+              <span>Product type</span>
+              <span>Vendor</span>
               <span>Actions</span>
             </div>
-            {products.length ? products.map((item) => {
+            {visibleProducts.length ? visibleProducts.map((item) => {
               const nextStatus = productStatusValue(item) === "published" ? "draft" : "published";
 
               return (
@@ -1204,21 +1299,20 @@ export function AdminProductsClient() {
                   <span>
                     <label className="admin-row-select">
                       <input aria-label={`Select ${item.title}`} checked={selectedSet.has(item.id)} onChange={() => toggleSelected(item.id)} type="checkbox" />
-                      <span className="admin-product-listing">
-                        {item.imageUrls[0] ? <img alt="" src={item.imageUrls[0]} /> : <span aria-hidden="true" className="admin-product-thumbnail-placeholder" />}
-                        <strong>{item.title}</strong>
-                      </span>
                     </label>
-                    <small>{item.categories?.join(", ") || item.category}</small>
                   </span>
-                  <span>{item.brandName || "-"}</span>
-                  <span>{productTypeOptions.find((option) => option.value === item.productType)?.label ?? "Simple"}</span>
-                  <span>{item.sku || "-"}</span>
-                  <span>{productPriceLabel(item)}</span>
-                  <span>{productStockLabel(item)}</span>
+                  <span className="admin-product-listing">
+                    {item.imageUrls[0] ? <img alt="" src={item.imageUrls[0]} /> : <span aria-hidden="true" className="admin-product-thumbnail-placeholder" />}
+                    <button className="product-row-link" onClick={() => startEditor(item)} type="button">{item.title}<small>{item.sku || "No SKU"}</small></button>
+                  </span>
                   <span>
                     <span className={`admin-status-pill admin-status-${productStatusValue(item)}`}>{productStatusLabel(item)}</span>
                   </span>
+                  <span>{productStockLabel(item)}</span>
+                  <span>{item.categories?.join(", ") || item.category || "No category"}</span>
+                  <span>{item.collectionIds?.length ? item.collectionIds.length : "—"}</span>
+                  <span>{productTypeOptions.find((option) => option.value === item.productType)?.label ?? "Simple"}</span>
+                  <span>{item.brandName || "—"}</span>
                   <span className="admin-actions">
                     <button disabled={catalogBusy} type="button" className="text-button" onClick={() => startEditor(item)}>
                       Edit
@@ -1235,11 +1329,11 @@ export function AdminProductsClient() {
                   </span>
                 </div>
               );
-            }) : <p className="empty-catalog">No products have been created yet.</p>}
+            }) : <p className="empty-catalog">{products.length ? "No products match your search and filters." : "No products have been created yet."}</p>}
           </div>
         ) : (
           <div className="admin-product-grid">
-            {products.length ? products.map((item) => {
+            {visibleProducts.length ? visibleProducts.map((item) => {
               const nextStatus = productStatusValue(item) === "published" ? "draft" : "published";
 
               return (
@@ -1278,9 +1372,10 @@ export function AdminProductsClient() {
                   </div>
                 </article>
               );
-            }) : <p className="empty-catalog">No products have been created yet.</p>}
+            }) : <p className="empty-catalog">{products.length ? "No products match your search and filters." : "No products have been created yet."}</p>}
           </div>
         )}
+        {filteredProducts.length ? <div className="catalog-pagination"><span>{page * catalogPageSize + 1}–{Math.min((page + 1) * catalogPageSize, filteredProducts.length)} of {filteredProducts.length} products</span><div><button className="button button-secondary" disabled={page === 0} onClick={() => setPage((current) => current - 1)} type="button">Previous</button><button className="button button-secondary" disabled={page + 1 >= totalPages} onClick={() => setPage((current) => current + 1)} type="button">Next</button></div></div> : null}
       </section>
     </div>
   );

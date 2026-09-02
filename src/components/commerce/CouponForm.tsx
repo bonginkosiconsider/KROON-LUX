@@ -10,7 +10,7 @@ import {
   validatePromoterCode,
 } from "@/services/firebase-referrals";
 
-export function CouponForm({ initialCode, label = "Promoter code" }: { initialCode?: string | null; label?: string }) {
+export function CouponForm({ initialCode, label = "PROMO CODE" }: { initialCode?: string | null; label?: string }) {
   const { user } = useFirebaseAuth();
   const referral = useActiveReferral(user?.uid);
   const [code, setCode] = useState(() => normalizePromoterCode(initialCode ?? ""));
@@ -55,7 +55,7 @@ export function CouponForm({ initialCode, label = "Promoter code" }: { initialCo
     ? user
       ? `${referral.code} active: ${referral.discountPercent}% off.`
       : `Sign in to activate ${referral.discountPercent}% off from ${referral.code}.`
-    : "Enter an approved promoter code.";
+    : null;
 
   return (
     <form className="coupon-form" onSubmit={submit}>
@@ -86,7 +86,7 @@ export function CouponForm({ initialCode, label = "Promoter code" }: { initialCo
           </button>
         ) : null}
       </div>
-      <p className="form-message">{message ?? activeMessage}</p>
+      {(message ?? activeMessage) ? <p className="form-message">{message ?? activeMessage}</p> : null}
     </form>
   );
 }

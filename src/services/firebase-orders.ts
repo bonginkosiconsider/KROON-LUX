@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import type { Order } from "@/lib/firebase-models";
+import { shippingCostCents } from "@/lib/shipping";
 import {
   calculateReferralDiscountCents,
   clearStoredReferral,
@@ -77,7 +78,7 @@ export async function createFirebaseCheckout(input: CheckoutInput, items: Order[
 
   const activeReferral = await resolveStoredReferral(customer.uid);
   const subtotalCents = itemSubtotalCents(items);
-  const shippingCents = subtotalCents > 0 && subtotalCents < 150000 ? 9500 : 0;
+  const shippingCents = shippingCostCents(subtotalCents);
   const discountCents = calculateReferralDiscountCents(subtotalCents, activeReferral);
   const tipCents = Math.max(0, Math.round(input.tipCents ?? 0));
   const totalCents = Math.max(0, subtotalCents + shippingCents - discountCents + tipCents);

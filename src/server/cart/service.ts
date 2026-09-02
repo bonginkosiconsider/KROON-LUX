@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/server/auth/session";
 import { quoteCoupon } from "@/server/coupons/service";
+import { shippingCostCents } from "@/lib/shipping";
 
 const cartCookie = "kroon_cart";
 const cartCookieMaxAge = 60 * 60 * 24 * 90;
@@ -110,7 +111,7 @@ export async function readCart() {
     };
   });
   const subtotalCents = items.reduce((sum, item) => sum + item.lineTotalCents, 0);
-  const shippingCents = subtotalCents > 0 && subtotalCents < 150000 ? 9500 : 0;
+  const shippingCents = shippingCostCents(subtotalCents);
   const coupon = await quoteCoupon(cart.couponCode, subtotalCents, shippingCents);
   const discountCents = Math.min(coupon.discountCents, subtotalCents + shippingCents);
   const totalCents = Math.max(0, subtotalCents + shippingCents - discountCents);

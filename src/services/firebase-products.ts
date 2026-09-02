@@ -488,6 +488,8 @@ export async function createProduct(input: ProductInput) {
     transaction.set(newSlugRef, { slug: prepared.slug, productId: productRef.id, updatedAt: serverTimestamp() });
     entries.forEach((entry) => transaction.set(registryRef(entry), { ...registryPayload(entry), createdAt: serverTimestamp() }));
   });
+
+  return productRef.id;
 }
 
 export async function updateProduct(id: string, input: Partial<ProductInput>) {

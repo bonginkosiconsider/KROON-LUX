@@ -7,6 +7,7 @@ import {
   getDocs,
   onSnapshot,
   serverTimestamp,
+  setDoc,
   updateDoc,
   writeBatch,
   type QueryDocumentSnapshot,
@@ -238,4 +239,32 @@ export async function removeCategory(category: AdminCategory) {
   }
 
   await batch.commit();
+}
+
+/** Persist the visual order used by the admin and storefront taxonomy pickers. */
+export async function reorderCategories(ordered: AdminCategory[]) {
+  const batch = writeBatch(db);
+  ordered.forEach((category, index) => {
+    const reference = doc(db, "categories", category.id.startsWith("default:") ? defaultCategoryDocId(category.slug) : category.id);
+    batch.set(reference, {
+      name: category.name,
+      slug: category.slug,
+      isDefault: category.source === "default",
+      deleted: false,
+      sortOrder: index,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  });
+  await batch.commit();
+}
+
+export function subscribeCategoryProductOrder(slug: string, callback: (ids: string[]) => void): Unsubscribe {
+  return onSnapshot(doc(db, "categoryProductOrders", slug), (snapshot) => {
+    const value = snapshot.data()?.productIds;
+    callback(Array.isArray(value) ? value.filter((id): id is string => typeof id === "string") : []);
+  }, () => callback([]));
+}
+
+export async function reorderCategoryProducts(slug: string, productIds: string[]) {
+  await setDoc(doc(db, "categoryProductOrders", slug), { productIds, updatedAt: serverTimestamp() }, { merge: true });
 }
