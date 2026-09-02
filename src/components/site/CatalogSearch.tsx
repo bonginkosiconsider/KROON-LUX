@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FiSearch } from "react-icons/fi";
 import { useProducts } from "@/hooks/use-products";
 
 type Suggestion = {
@@ -67,7 +68,7 @@ export function CatalogSearch() {
     <div className="catalog-search" ref={dialogRef}>
       <button className="header-icon" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="catalog-search-panel">
         <span className="sr-only">Search the catalog</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="5.8" /><path d="m15.2 15.2 4 4" /></svg>
+        <FiSearch aria-hidden="true" />
       </button>
       {open ? (
         <div className="search-popover" id="catalog-search-panel">

@@ -17,7 +17,6 @@ function cardProduct(product: ReturnType<typeof useProducts>["products"][number]
 }
 
 export function CollectionPageClient({ slug }: { slug: string }) {
-  const [availability, setAvailability] = useState("all");
   const [sort, setSort] = useState("featured");
   const { products, loading: productsLoading } = useProducts();
   const { item: brand, loading: brandsLoading } = useStoreTaxonomy("brands", slug);
@@ -34,9 +33,7 @@ export function CollectionPageClient({ slug }: { slug: string }) {
     return [product.category, ...(product.categories ?? []), ...(product.tags ?? [])].some((value) => value.toLowerCase() === normalized);
   });
   const loading = productsLoading || brandsLoading || collectionsLoading;
-  const displayed = useMemo(() => {
-    const filtered = availability === "in-stock" ? visible.filter((product) => product.inventoryCount > 0) : availability === "sale" ? visible.filter((product) => product.salePrice !== undefined && product.salePrice < product.price) : visible;
-    return [...filtered].sort((a, b) => sort === "price-asc" ? (a.salePrice ?? a.price) - (b.salePrice ?? b.price) : sort === "price-desc" ? (b.salePrice ?? b.price) - (a.salePrice ?? a.price) : 0);
-  }, [availability, sort, visible]);
-  return <main className="page-shell"><section className="collection-hero"><h1>{title}</h1></section><section className="collection-results"><div className="collection-toolbar"><div className="collection-filters"><span>Filter:</span><label>Availability<select aria-label="Filter by availability" value={availability} onChange={(event) => setAvailability(event.target.value)}><option value="all">All</option><option value="in-stock">In stock</option><option value="sale">On sale</option></select></label><label>Price<select aria-label="Filter by price" value={sort === "price-desc" ? "price-desc" : "all"} onChange={(event) => setSort(event.target.value === "price-desc" ? "price-desc" : "featured")}><option value="all">All</option><option value="price-desc">High to low</option></select></label></div><label className="collection-sort">Sort by:<select aria-label="Sort products" value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Featured</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></label><span className="collection-count">{loading ? "Loading…" : `${displayed.length} products`}</span></div><div className="product-grid shop-grid">{displayed.map((product) => <ProductCard key={product.id} product={cardProduct(product)} />)}</div>{!loading && !displayed.length ? <div className="empty-state"><h2>Nothing in this collection yet.</h2><p>Products assigned by the store team will appear here automatically.</p></div> : null}</section></main>;
+  const displayed = useMemo(() => [...visible].sort((a, b) => sort === "price-asc" ? (a.salePrice ?? a.price) - (b.salePrice ?? b.price) : sort === "price-desc" ? (b.salePrice ?? b.price) - (a.salePrice ?? a.price) : 0), [sort, visible]);
+
+  return <main className="page-shell"><section className="collection-hero"><h1>{title}</h1></section><section className="collection-results"><div className="collection-toolbar"><label className="collection-sort">Sort by:<select aria-label="Sort products" value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Featured</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></label><span className="collection-count">{loading ? "Loading…" : `${displayed.length} products`}</span></div><div className="product-grid shop-grid">{displayed.map((product) => <ProductCard key={product.id} product={cardProduct(product)} />)}</div>{!loading && !displayed.length ? <div className="empty-state"><h2>Nothing in this collection yet.</h2><p>Products assigned by the store team will appear here automatically.</p></div> : null}</section></main>;
 }

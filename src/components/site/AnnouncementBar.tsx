@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { announcementBarConfig } from "@/config/announcement-bar";
 import { useStoreSettings } from "@/hooks/use-store-settings";
 
@@ -28,6 +29,8 @@ export function AnnouncementBar() {
 
   if (!isVisible || messages.length === 0) return null;
   const active = activeAnnouncement % messages.length;
+  const selectPrevious = () => setActiveAnnouncement((current) => (current - 1 + messages.length) % messages.length);
+  const selectNext = () => setActiveAnnouncement((current) => (current + 1) % messages.length);
 
   return (
     <aside
@@ -35,7 +38,10 @@ export function AnnouncementBar() {
       className="announcement-bar"
       style={{ "--announcement-transition-duration": `${transitionDurationMs}ms` } as React.CSSProperties}
     >
-      <div className="announcement-bar-content">
+      <button className="announcement-bar-control announcement-bar-control-previous" type="button" onClick={selectPrevious} aria-label="Previous announcement">
+        <FiChevronLeft aria-hidden="true" />
+      </button>
+      <div className="announcement-bar-content" aria-live="polite">
         {messages.map((message, index) => (
           <p
             aria-hidden={index !== active}
@@ -46,6 +52,9 @@ export function AnnouncementBar() {
           </p>
         ))}
       </div>
+      <button className="announcement-bar-control announcement-bar-control-next" type="button" onClick={selectNext} aria-label="Next announcement">
+        <FiChevronRight aria-hidden="true" />
+      </button>
     </aside>
   );
 }
