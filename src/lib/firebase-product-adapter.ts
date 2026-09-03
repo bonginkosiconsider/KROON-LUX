@@ -60,9 +60,10 @@ function productStockStatus(product: Product): ProductStockStatus {
 }
 
 function variationStockStatus(variation: ProductVariation): ProductStockStatus {
-  if (variation.stockStatus) return variation.stockStatus;
-  if (variation.manageStock !== false && variation.inventoryCount <= 0) return "out-of-stock";
-  return "in-stock";
+  if (variation.manageStock !== false) {
+    return variation.inventoryCount <= 0 ? "out-of-stock" : "in-stock";
+  }
+  return variation.stockStatus ?? "in-stock";
 }
 
 export function firebasePurchasableId(productId: string, variationId?: string) {

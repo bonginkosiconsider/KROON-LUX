@@ -293,7 +293,7 @@ function variationSkuSuffix(variation: ProductVariation, index: number) {
 function resolveStockStatus(manageStock: boolean, quantity: number, backorders: BackorderPolicy, selected?: ProductStockStatus): ProductStockStatus {
   if (!manageStock) return selected ?? "in-stock";
   if (quantity <= 0) return backorders === "not-allowed" ? "out-of-stock" : "on-backorder";
-  return selected === "out-of-stock" ? "out-of-stock" : "in-stock";
+  return "in-stock";
 }
 
 function prepareVariation(variation: ProductVariation, index: number, productId: string, parentSku: string, parentPrice: number, parentLowStock: number): ProductVariation {

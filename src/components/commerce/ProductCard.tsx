@@ -29,7 +29,8 @@ export function ProductCard({ product, recommendation = false }: ProductCardProp
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : minPrice;
   const priceLabel = minPrice === maxPrice ? formatMoney(minPrice, currency) : `${formatMoney(minPrice, currency)} - ${formatMoney(maxPrice, currency)}`;
-  const available = variant ? variantAvailableQuantity({ stockQuantity: variant.stockQuantity ?? 0, reservedStock: variant.reservedStock ?? 0 }) > 0 : false;
+  const hasAvailableVariant = variants.some((item) => variantAvailableQuantity({ stockQuantity: item.stockQuantity ?? 0, reservedStock: item.reservedStock ?? 0 }) > 0);
+  const available = Boolean(variant) && hasAvailableVariant;
   const image = product.images[0];
   const saleVariant = variants.find((item) => item.salePriceCents !== null && item.salePriceCents !== undefined && item.salePriceCents < item.priceInCents);
   const regularPrice = saleVariant ? formatMoney(saleVariant.priceInCents, currency) : null;
